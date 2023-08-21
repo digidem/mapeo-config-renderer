@@ -1,0 +1,77 @@
+.icon-grid {
+    padding: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 3rem;
+    height: 80vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.icon-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.icon {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    border: 2px solid;
+}
+
+.icon-name {
+    margin-top: 0.5rem;
+    max-width: 50px;
+    text-align: center;
+}
+.phone-frame {
+    padding-bottom: 60px;
+    box-sizing: border-box;
+    width: 475px;
+    border: 1px solid #000;
+    border-radius: 18px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    overflow-y: hidden;
+    margin: auto;
+    position: fixed;
+    top: 10px;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: #fff;
+}
+.phone-outer-frame {
+    background: grey;
+    width: 495px;
+    border: 1px solid #000;
+    border-radius: 18px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: auto;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+}
+
+.bottom-circle {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 60px;
+    background-color: grey;
+    border-radius: 50%;
+}
