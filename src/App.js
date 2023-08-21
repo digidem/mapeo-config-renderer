@@ -1,6 +1,6 @@
-import logo from './logo.svg';
-import './App.css';
-import IconGrid from './components/IconGrid'
+import logo from "./logo.svg";
+import "./App.css";
+import IconGrid from "./components/IconGrid";
 
 function App() {
   return (
