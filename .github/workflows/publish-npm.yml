@@ -1,6 +1,12 @@
 on:
   push:
     branches: [main]
+    paths:
+      - 'src/**'
+      - 'api/**'
+      - 'public/**'
+      - 'bin.js'
+      - 'package.json'
 
 jobs:
   publish:
