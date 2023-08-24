@@ -65,7 +65,11 @@ function runApp(mapeoConfigFolder) {
   watcher.on("change", (path) => {
     console.log(`File ${path} has been changed`);
     updateEmitter.on("update", () => {
-      io.emit("presets:update", "Presets updated");
+      clearTimeout(updateTimeout); // Clear any existing timeout
+      updateTimeout = setTimeout(() => {
+        // Throttle the emit on update
+        io.emit("presets:update", "Presets updated");
+      }, 1000); // Set a delay of 1 second before emitting the update
     });
     updateEmitter.emit("update");
     io.on("connection", (socket) => {
@@ -74,22 +78,6 @@ function runApp(mapeoConfigFolder) {
       socket.on("disconnect", () => {
         console.log("Client disconnected");
       });
-    });
-  });
-
-  app.get("/updates", (req, res) => {
-    res.setHeader("Content-Type", "text/event-stream");
-    res.setHeader("Cache-Control", "no-cache");
-    res.setHeader("Connection", "keep-alive");
-    res.flushHeaders();
-
-    updateEmitter.on("update", () => {
-      res.write("event: update\n");
-      res.write("data: Update available\n\n");
-    });
-
-    req.on("close", () => {
-      updateEmitter.removeAllListeners();
     });
   });
   app.get("/", (req, res) => {
@@ -113,7 +101,6 @@ function runApp(mapeoConfigFolder) {
       res.status(404).json({ error: "Icon not found." });
     }
   });
-
   app.get("/api/presets", (req, res) => {
     const reqHostname = req.hostname;
     const protocol = req.protocol;
@@ -123,7 +110,6 @@ function runApp(mapeoConfigFolder) {
           res.status(500).json({ error: "Failed to read presets directory." });
           return;
         }
-
         const presets = files.map((file) => {
           const filePath = path.join(presetsDir, file);
           if (fs.lstatSync(filePath).isDirectory()) {
@@ -132,7 +118,6 @@ function runApp(mapeoConfigFolder) {
           const rawData = fs.readFileSync(filePath, "utf-8");
           return JSON.parse(rawData);
         });
-
         res.json(
           presets
             .filter((i) => i)
