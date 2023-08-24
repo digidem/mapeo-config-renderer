@@ -1,8 +1,21 @@
 const express = require("express");
 const fs = require("fs");
+const http = require("http");
+const socketIO = require("socket.io");
+const events = require("events");
+const chokidar = require("chokidar");
 const path = require("path");
+const os = require("os");
+const hostname = os.hostname();
 
 const app = express();
+const server = http.createServer(app);
+const io = socketIO(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+  },
+});
 const port = process.env.PORT || 5000;
 
 function compareStrings(a = "", b = "") {
@@ -27,6 +40,10 @@ function presetCompare(a, b) {
 }
 
 function runApp(mapeoConfigFolder) {
+  const presetsDir = mapeoConfigFolder
+    ? path.join(mapeoConfigFolder, "presets")
+    : process.env.PRESETS_FOLDER || path.join(__dirname, "presets");
+
   app.use(express.static(path.join(__dirname, "..", "build")));
 
   app.use((req, res, next) => {
@@ -37,9 +54,50 @@ function runApp(mapeoConfigFolder) {
     );
     next();
   });
+  const updateEmitter = new events.EventEmitter();
+  let updateView = false;
 
+  const watcher = chokidar.watch(mapeoConfigFolder, {
+    ignored: /(^|[\/\\])\../, // ignore dotfiles
+    persistent: true,
+  });
+
+  watcher.on("change", (path) => {
+    console.log(`File ${path} has been changed`);
+    updateEmitter.on("update", () => {
+      io.emit("presets:update", "Presets updated");
+    });
+    updateEmitter.emit("update");
+    io.on("connection", (socket) => {
+      console.log("Client connected");
+
+      socket.on("disconnect", () => {
+        console.log("Client disconnected");
+      });
+    });
+  });
+
+  app.get("/updates", (req, res) => {
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    res.flushHeaders();
+
+    updateEmitter.on("update", () => {
+      res.write("event: update\n");
+      res.write("data: Update available\n\n");
+    });
+
+    req.on("close", () => {
+      updateEmitter.removeAllListeners();
+    });
+  });
   app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "..", "build", "index.html"));
+    if (updateView) {
+      res.sendFile(path.join(__dirname, "..", "build", "index.html"));
+      updateView = false;
+    }
   });
 
   app.get("/icons/:iconName", (req, res) => {
@@ -57,9 +115,8 @@ function runApp(mapeoConfigFolder) {
   });
 
   app.get("/api/presets", (req, res) => {
-    const presetsDir = mapeoConfigFolder
-      ? path.join(mapeoConfigFolder, "presets")
-      : process.env.PRESETS_FOLDER || path.join(__dirname, "presets");
+    const reqHostname = req.hostname;
+    const protocol = req.protocol;
     if (fs.existsSync(presetsDir) && fs.readdirSync(presetsDir).length > 0) {
       fs.readdir(presetsDir, (err, files) => {
         if (err) {
@@ -84,7 +141,7 @@ function runApp(mapeoConfigFolder) {
               const { icon } = i;
               return {
                 ...i,
-                iconPath: `http://localhost:5000/icons/${icon}-100px.svg`,
+                iconPath: `${protocol}://${reqHostname}:${port}/icons/${icon}-100px.svg`,
               };
             }),
         );
@@ -93,9 +150,8 @@ function runApp(mapeoConfigFolder) {
       res.status(500).json({ error: "No presets found." });
     }
   });
-
-  app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
+  server.listen(port, () => {
+    console.log(`Server running at http://${hostname}:${port}`);
   });
 }
 

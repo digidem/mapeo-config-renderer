@@ -1,6 +1,6 @@
 {
   "name": "mapeo-config-renderer",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "bin": {
     "mapeo-config-renderer": "bin.js"
   },
@@ -9,15 +9,19 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.4.0",
+    "chokidar": "^3.5.3",
     "express": "^4.18.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
+    "socket.io": "^4.7.2",
+    "socket.io-client": "^4.7.2",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "npm run build && node api",
-    "dev": "node api & react-scripts start",
+    "start:ui": "react-scripts start",
+    "start:api": "node api",
+    "dev": "nodemon api $1 & npm run start:ui",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",

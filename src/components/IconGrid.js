@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import "./IconGrid.css";
 import axios from "axios";
+import io from "socket.io-client";
+
+const socket = io("http://localhost:5000");
 
 const fetchPresets = async () => {
   try {
@@ -9,7 +12,7 @@ const fetchPresets = async () => {
     return response.data;
   } catch (error) {
     console.error("Failed to fetch presets:", error);
-    return [];
+    return null;
   }
 };
 
@@ -22,13 +25,22 @@ const IconGrid = () => {
       setPresets(data);
     };
     fetchData();
-  }, []);
 
+    // Listen for updates from the server
+    socket.on("presets:update", async () => {
+      const data = await fetchPresets();
+      setPresets(data);
+    });
+
+    // Clean up the effect
+    return () => socket.off("presets:update");
+  }, []);
   return (
     <div className="phone-outer-frame">
       <div className="phone-frame">
         <div className="icon-grid">
-          {presets.map((preset) => (
+          {presets && presets.length === 0 && <span className="vertical-center">Loading...</span>}
+          {presets && presets.map((preset) => (
             <div key={preset.name} className="icon-container">
               <div
                 className="icon"
@@ -45,8 +57,10 @@ const IconGrid = () => {
                 />
               </div>
               <div className="icon-name">{preset.name}</div>
+
             </div>
           ))}
+          {!presets && <span className="vertical-center">Mapeo configuration folder not detected, make sure you are inside or passing the right folder</span>}
         </div>
         <div className="bottom-circle"></div>
       </div>
