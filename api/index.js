@@ -16,7 +16,7 @@ const io = socketIO(server, {
     methods: ["GET", "POST"],
   },
 });
-const port = process.env.PORT || 5000;
+const envPort = process.env.PORT || 5000;
 
 function compareStrings(a = "", b = "") {
   return a.toLowerCase().localeCompare(b.toLowerCase());
@@ -39,7 +39,8 @@ function presetCompare(a, b) {
   }
 }
 
-function runApp(mapeoConfigFolder) {
+function runApp(mapeoConfigFolder, appPort) {
+  const port = appPort || envPort;
   const presetsDir = mapeoConfigFolder
     ? path.join(mapeoConfigFolder, "presets")
     : process.env.PRESETS_FOLDER || path.join(__dirname, "presets");
