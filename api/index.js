@@ -136,6 +136,10 @@ function runApp(mapeoConfigFolder, appPort, headless) {
       res.status(500).json({ error: "No presets found." });
     }
   });
+  app.get("/path", (req, res) => {
+    res.send(mapeoConfigFolder);
+  });
+
   server.listen(port, () => {
     console.log(`Server running at http://${hostname}:${port}`);
   });
