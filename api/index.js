@@ -7,15 +7,6 @@ const chokidar = require("chokidar");
 const path = require("path");
 const os = require("os");
 const hostname = os.hostname();
-
-const app = express();
-const server = http.createServer(app);
-const io = socketIO(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"],
-  },
-});
 const envPort = process.env.PORT || 5000;
 
 function compareStrings(a = "", b = "") {
@@ -39,19 +30,28 @@ function presetCompare(a, b) {
   }
 }
 
-function runApp(mapeoConfigFolder, appPort) {
+function runApp(mapeoConfigFolder, appPort, headless) {
+  const app = express();
+  const server = http.createServer(app);
+  const io = socketIO(server, {
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"],
+    },
+  });
+  console.log("appPort", appPort);
   const port = appPort || envPort;
   const presetsDir = mapeoConfigFolder
     ? path.join(mapeoConfigFolder, "presets")
     : process.env.PRESETS_FOLDER || path.join(__dirname, "presets");
 
-  app.use(express.static(path.join(__dirname, "..", "build")));
+  !headless && app.use(express.static(path.join(__dirname, "..", "build")));
 
   app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header(
       "Access-Control-Allow-Headers",
-      "Origin, X-Requested-With, Content-Type, Accept",
+      "Origin, X-Requested-With, Content-Type, Accept"
     );
     next();
   });
@@ -81,7 +81,7 @@ function runApp(mapeoConfigFolder, appPort) {
       });
     });
   });
-  app.get("/", (req, res) => {
+  !headless && app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "..", "build", "index.html"));
     if (updateView) {
       res.sendFile(path.join(__dirname, "..", "build", "index.html"));
@@ -129,7 +129,7 @@ function runApp(mapeoConfigFolder, appPort) {
                 ...i,
                 iconPath: `${protocol}://${reqHostname}:${port}/icons/${icon}-100px.svg`,
               };
-            }),
+            })
         );
       });
     } else {
