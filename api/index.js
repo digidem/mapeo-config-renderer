@@ -51,7 +51,7 @@ function runApp(mapeoConfigFolder, appPort, headless) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header(
       "Access-Control-Allow-Headers",
-      "Origin, X-Requested-With, Content-Type, Accept"
+      "Origin, X-Requested-With, Content-Type, Accept",
     );
     next();
   });
@@ -81,13 +81,14 @@ function runApp(mapeoConfigFolder, appPort, headless) {
       });
     });
   });
-  !headless && app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "..", "build", "index.html"));
-    if (updateView) {
+  !headless &&
+    app.get("/", (req, res) => {
       res.sendFile(path.join(__dirname, "..", "build", "index.html"));
-      updateView = false;
-    }
-  });
+      if (updateView) {
+        res.sendFile(path.join(__dirname, "..", "build", "index.html"));
+        updateView = false;
+      }
+    });
 
   app.get("/icons/:iconName", (req, res) => {
     const iconName = req.params.iconName;
@@ -129,7 +130,7 @@ function runApp(mapeoConfigFolder, appPort, headless) {
                 ...i,
                 iconPath: `${protocol}://${reqHostname}:${port}/icons/${icon}-100px.svg`,
               };
-            })
+            }),
         );
       });
     } else {
@@ -137,7 +138,9 @@ function runApp(mapeoConfigFolder, appPort, headless) {
     }
   });
   app.get("/path", (req, res) => {
-    res.send(mapeoConfigFolder);
+    res.json({
+      data: mapeoConfigFolder,
+    });
   });
 
   server.listen(port, () => {
