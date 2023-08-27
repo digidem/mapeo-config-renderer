@@ -7,9 +7,9 @@ const socket = io("http://localhost:5000");
 
 const fetchPresets = async () => {
   try {
-    const response = await axios.get("http://localhost:5000/api/presets");
-    console.log("response", response);
-    return response.data;
+    const { data } = await axios.get("http://localhost:5000/api/presets");
+    console.log("response", data);
+    return data.data;
   } catch (error) {
     console.error("Failed to fetch presets:", error);
     return null;
