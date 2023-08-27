@@ -26,6 +26,12 @@ function presetCompare(a, b) {
 }
 
 module.exports = async (presetsDir, protocol, hostname, port) => {
+  let baseUrl = '/'
+  if (protocol && hostname && port) {
+    baseUrl = `${protocol}://${hostname}:${port}/`
+  } else if (protocol) {
+    baseUrl = protocol
+  }
   try {
     log('Reading presets directory', presetsDir);
     const files = await fs.readdir(presetsDir);
@@ -49,7 +55,7 @@ module.exports = async (presetsDir, protocol, hostname, port) => {
         const { icon } = i;
         return {
           ...i,
-          iconPath: `${protocol}://${hostname}:${port}/icons/${icon}-100px.svg`,
+          iconPath: `${baseUrl}/${icon}-100px.svg`,
         };
       })
       log('Presets data', data.length)
