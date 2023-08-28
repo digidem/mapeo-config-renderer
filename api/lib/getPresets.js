@@ -26,7 +26,7 @@ function presetCompare(a, b) {
 }
 
 module.exports = async (presetsDir, protocol, hostname, port) => {
-  let baseUrl = '/'
+  let baseUrl = ''
   if (protocol && hostname && port) {
     baseUrl = `${protocol}://${hostname}:${port}/`
   } else if (protocol) {
@@ -39,14 +39,20 @@ module.exports = async (presetsDir, protocol, hostname, port) => {
     if (files.length > 0) {
       const presets = await Promise.all(files.map(async (file) => {
         const filePath = path.join(presetsDir, file);
-        log('Reading file', filePath);
+        const slug = file.slug = path.basename(file, '.json');
+        log('Reading file', slug);
+        
         const stats = await fs.lstat(filePath);
         if (stats.isDirectory()) {
           return null;
         }
         const rawData = await fs.readFile(filePath, "utf-8");
         log('Raw data', rawData.length);
-        return JSON.parse(rawData);
+        const json = await JSON.parse(rawData);
+        return {
+          ...json,
+          slug
+        }
       }));
       const data = presets
       .filter((i) => i)
