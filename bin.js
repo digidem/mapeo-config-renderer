@@ -2,5 +2,5 @@
 
 const app = require("./api");
 
-const [, , mapeoConfigFolder = "."] = process.argv;
+const [, , mapeoConfigFolder = process.env.CONFIG_FOLDER || "."] = process.argv;
 app(mapeoConfigFolder);

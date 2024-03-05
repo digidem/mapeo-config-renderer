@@ -7,6 +7,8 @@ const path = require("path");
 const os = require("os");
 const getIcon = require("./lib/getIcon");
 const getPresets = require("./lib/getPresets");
+const getFields = require("./lib/getFields");
+
 const hostname = os.hostname();
 const envPort = process.env.PORT || 5000;
 const log = require("./lib/log");
@@ -18,13 +20,16 @@ function runApp(mapeoConfigFolder, appPort, headless) {
   const app = express();
   const server = http.createServer(app);
 
-  log(`appPort: ${appPort}`);
+  log(`appPort: ${appPort || "not set"}`);
   const port = appPort || envPort;
   const presetsDir = mapeoConfigFolder
     ? path.join(mapeoConfigFolder, "presets")
     : process.env.PRESETS_FOLDER || path.join(__dirname, "presets");
 
-  log(`Presets Directory: ${presetsDir}`);
+  const fieldsDir = path.join(mapeoConfigFolder, "fields");
+  log(`Config directory: ${mapeoConfigFolder}`);
+  log(`Presets directory: ${presetsDir}`);
+  log(`Fields directory: ${fieldsDir}`);
 
   !headless && app.use(express.static(path.join(__dirname, "..", "build")));
 
@@ -104,6 +109,18 @@ function runApp(mapeoConfigFolder, appPort, headless) {
       res
         .status(500)
         .json({ error: error || "Unknown error on getting presets" });
+    }
+  });
+  app.get("/api/fields", async (req, res) => {
+    try {
+      log("Getting fields");
+      const data = await getFields(fieldsDir);
+      log("Got fields", data.length);
+      res.json(data);
+    } catch (error) {
+      res
+        .status(500)
+        .json({ error: "Failed to get fields", message: error.message });
     }
   });
   app.get("/path", (req, res) => {
