@@ -61,7 +61,7 @@ module.exports = async (presetsDir, protocol, hostname, port) => {
         const { icon } = i;
         return {
           ...i,
-          iconPath: `${baseUrl}/${icon}-100px.svg`,
+          iconPath: `${baseUrl}icons/${icon}-100px.svg`,
         };
       })
       log('Presets data', data.length)
