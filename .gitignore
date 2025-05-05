@@ -24,3 +24,4 @@ yarn-error.log*
 .vscode
 nohup.out
 .aider*
+.history
