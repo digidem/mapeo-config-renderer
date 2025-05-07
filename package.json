@@ -1,6 +1,16 @@
 {
   "name": "mapeo-config-renderer",
-  "version": "1.0.5",
+  "version": "1.0.6",
+  "description": "A library and command-line tool for rendering Mapeo configuration files",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./api": "./api/index.js",
+    "./lib": {
+      "import": "./api/lib/index.js",
+      "require": "./api/lib/index.js"
+    }
+  },
   "bin": {
     "mapeo-config-renderer": "bin.js"
   },
@@ -18,12 +28,17 @@
     "socket.io-client": "^4.8.1",
     "web-vitals": "^4.2.4"
   },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
   "scripts": {
     "start:ui": "react-scripts start",
     "start:api": "node bin.js $1",
     "dev": "nodemon bin.js $1 & npm run start:ui",
     "build": "react-scripts build",
     "test": "react-scripts test",
+    "test:api": "jest --config=jest.config.api.js",
+    "test:all": "npm run test -- --watchAll=false && npm run test:api",
     "eject": "react-scripts eject",
     "lint": "prettier --write **/*.js"
   },
