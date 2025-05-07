@@ -1,9 +1,9 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
-router.get('/:iconName', (req, res) => {
+router.get("/:iconName", (req, res) => {
   const iconName = req.params.iconName;
   const iconsDir = path.join(mapeoConfigFolder, "icons");
   const iconPath = path.join(iconsDir, iconName);

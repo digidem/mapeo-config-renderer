@@ -1,6 +1,6 @@
-const log = require('../log');
+const log = require("../log");
 
-describe('log', () => {
+describe("log", () => {
   let originalConsoleLog;
   let consoleLogMock;
 
@@ -20,36 +20,36 @@ describe('log', () => {
     delete process.env.DEBUG;
   });
 
-  it('should log messages when DEBUG is true', () => {
+  it("should log messages when DEBUG is true", () => {
     // Set DEBUG environment variable
     process.env.DEBUG = true;
 
     // Call the function
-    log('test message', 123, { key: 'value' });
+    log("test message", 123, { key: "value" });
 
     // Assertions
     expect(consoleLogMock).toHaveBeenCalledWith(
-      '*DEBUG - ',
-      'test message',
+      "*DEBUG - ",
+      "test message",
       123,
-      { key: 'value' }
+      { key: "value" },
     );
   });
 
-  it('should not log messages when DEBUG is not set', () => {
+  it("should not log messages when DEBUG is not set", () => {
     // Call the function
-    log('test message');
+    log("test message");
 
     // Assertions
     expect(consoleLogMock).not.toHaveBeenCalled();
   });
 
-  it('should not log messages when DEBUG is false', () => {
+  it("should not log messages when DEBUG is false", () => {
     // Set DEBUG environment variable to false
-    process.env.DEBUG = '';
+    process.env.DEBUG = "";
 
     // Call the function
-    log('test message');
+    log("test message");
 
     // Assertions
     expect(consoleLogMock).not.toHaveBeenCalled();

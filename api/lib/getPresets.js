@@ -1,6 +1,6 @@
-const fs = require('fs').promises;
-const log = require('./log');
-const path = require('path');
+const fs = require("fs").promises;
+const log = require("./log");
+const path = require("path");
 
 function compareStrings(a = "", b = "") {
   // log('Comparing strings', a, b);
@@ -26,52 +26,54 @@ function presetCompare(a, b) {
 }
 
 module.exports = async (presetsDir, protocol, hostname, port) => {
-  let baseUrl = ''
+  let baseUrl = "";
   if (protocol && hostname && port) {
-    baseUrl = `${protocol}://${hostname}:${port}/`
+    baseUrl = `${protocol}://${hostname}:${port}/`;
   } else if (protocol) {
-    baseUrl = protocol
+    baseUrl = protocol;
   }
   try {
-    log('Reading presets directory', presetsDir);
+    log("Reading presets directory", presetsDir);
     const files = await fs.readdir(presetsDir);
-    log('Files in presets directory', files);
+    log("Files in presets directory", files);
     if (files.length > 0) {
-      const presets = await Promise.all(files.map(async (file) => {
-        const filePath = path.join(presetsDir, file);
-        const slug = file.slug = path.basename(file, '.json');
-        log('Reading file', slug);
-        
-        const stats = await fs.lstat(filePath);
-        if (stats.isDirectory()) {
-          return null;
-        }
-        const rawData = await fs.readFile(filePath, "utf-8");
-        log('Raw data', rawData.length);
-        const json = await JSON.parse(rawData);
-        return {
-          ...json,
-          slug
-        }
-      }));
+      const presets = await Promise.all(
+        files.map(async (file) => {
+          const filePath = path.join(presetsDir, file);
+          const slug = (file.slug = path.basename(file, ".json"));
+          log("Reading file", slug);
+
+          const stats = await fs.lstat(filePath);
+          if (stats.isDirectory()) {
+            return null;
+          }
+          const rawData = await fs.readFile(filePath, "utf-8");
+          log("Raw data", rawData.length);
+          const json = await JSON.parse(rawData);
+          return {
+            ...json,
+            slug,
+          };
+        }),
+      );
       const data = presets
-      .filter((i) => i)
-      .sort(presetCompare)
-      .map((i) => {
-        const { icon } = i;
-        return {
-          ...i,
-          iconPath: `${baseUrl}icons/${icon}-100px.svg`,
-        };
-      })
-      log('Presets data', data.length)
-      log(data[0])
-      return data
+        .filter((i) => i)
+        .sort(presetCompare)
+        .map((i) => {
+          const { icon } = i;
+          return {
+            ...i,
+            iconPath: `${baseUrl}icons/${icon}-100px.svg`,
+          };
+        });
+      log("Presets data", data.length);
+      log(data[0]);
+      return data;
     } else {
-      throw new Error('Presets folder not found');
+      throw new Error("Presets folder not found");
     }
   } catch (err) {
-    log('Error reading presets directory', err);
+    log("Error reading presets directory", err);
     throw new Error("Failed to read presets directory.");
   }
-}
+};

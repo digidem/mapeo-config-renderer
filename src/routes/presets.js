@@ -1,9 +1,9 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
-router.get('/', (req, res) => {
+router.get("/", (req, res) => {
   const reqHostname = req.hostname;
   const protocol = req.protocol;
   if (fs.existsSync(presetsDir) && fs.readdirSync(presetsDir).length > 0) {

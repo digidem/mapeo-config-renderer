@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./IconGrid.css";
 import axios from "axios";
 import io from "socket.io-client";
+import packageJson from "../../package.json";
 
 const socket = io("http://localhost:5000");
 
@@ -35,32 +36,46 @@ const IconGrid = () => {
     // Clean up the effect
     return () => socket.off("presets:update");
   }, []);
+  console.log("packageJson", packageJson.version);
   return (
     <div className="phone-outer-frame">
+      <div className="version-info">
+        {process.packageJson.version && (
+          <span>Version: {process.packageJson.version}</span>
+        )}
+      </div>
+
       <div className="phone-frame">
         <div className="icon-grid">
-          {presets && presets.length === 0 && <span className="vertical-center">Loading...</span>}
-          {presets && presets.map((preset) => (
-            <div key={preset.name} className="icon-container">
-              <div
-                className="icon"
-                style={{
-                  backgroundColor: "white",
-                  borderColor: preset.color,
-                  borderWidth: 3.5,
-                }}
-              >
-                <img
-                  src={preset.iconPath}
-                  alt={preset.name}
-                  style={{ maxWidth: "35px", height: "35px" }}
-                />
+          {presets && presets.length === 0 && (
+            <span className="vertical-center">Loading...</span>
+          )}
+          {presets &&
+            presets.map((preset) => (
+              <div key={preset.name} className="icon-container">
+                <div
+                  className="icon"
+                  style={{
+                    backgroundColor: "white",
+                    borderColor: preset.color,
+                    borderWidth: 3.5,
+                  }}
+                >
+                  <img
+                    src={preset.iconPath}
+                    alt={preset.name}
+                    style={{ maxWidth: "35px", height: "35px" }}
+                  />
+                </div>
+                <div className="icon-name">{preset.name}</div>
               </div>
-              <div className="icon-name">{preset.name}</div>
-
-            </div>
-          ))}
-          {!presets && <span className="vertical-center">Mapeo configuration folder not detected, make sure you are inside or passing the right folder</span>}
+            ))}
+          {!presets && (
+            <span className="vertical-center">
+              Mapeo configuration folder not detected, make sure you are inside
+              or passing the right folder
+            </span>
+          )}
         </div>
         <div className="bottom-circle"></div>
       </div>
