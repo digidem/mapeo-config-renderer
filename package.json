@@ -45,7 +45,9 @@
     "eject": "react-scripts eject",
     "lint": "prettier --write \"**/*.{js,jsx,json,md}\"",
     "lint:check": "prettier --check \"**/*.{js,jsx,json,md}\"",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "generate:fixtures": "node scripts/generate-legacy-fixture.js && node scripts/generate-comapeo-fixture.js",
+    "test:fixtures": "npm run generate:fixtures && node scripts/test-fixtures.js"
   },
   "eslintConfig": {
     "extends": [
