@@ -5,9 +5,17 @@ const events = require("events");
 const chokidar = require("chokidar");
 const path = require("path");
 const os = require("os");
-const getIcon = require("./lib/getIcon");
-const getPresets = require("./lib/getPresets");
-const getFields = require("./lib/getFields");
+// Import all utility functions
+const {
+  getIcon,
+  getPresets,
+  getFields,
+  getMessages,
+  getDefaults,
+  getMetadata,
+  getStylesheet,
+  getConfig,
+} = require("./lib");
 
 const DEBUG = process.env.DEBUG === "true";
 
@@ -150,6 +158,96 @@ function runApp(mapeoConfigFolder, appPort, headless) {
       data: mapeoConfigFolder,
     });
     debugLog(`Served mapeoConfigFolder path: ${mapeoConfigFolder}`);
+  });
+
+  // New endpoints for CoMapeo format
+
+  app.get("/api/messages", async (req, res) => {
+    try {
+      log("Getting messages");
+      const messagesDir = path.join(mapeoConfigFolder, "messages");
+      const data = await getMessages(messagesDir);
+      log("Got messages", Object.keys(data).length);
+      res.json(data);
+      debugLog(`Served messages: ${Object.keys(data).length} languages`);
+    } catch (error) {
+      res
+        .status(500)
+        .json({ error: "Failed to get messages", message: error.message });
+      debugLog("Error serving messages", error);
+    }
+  });
+
+  app.get("/api/defaults", async (req, res) => {
+    try {
+      log("Getting defaults");
+      const data = await getDefaults(mapeoConfigFolder);
+      log("Got defaults", data);
+      res.json(data);
+      debugLog(`Served defaults`);
+    } catch (error) {
+      res
+        .status(500)
+        .json({ error: "Failed to get defaults", message: error.message });
+      debugLog("Error serving defaults", error);
+    }
+  });
+
+  app.get("/api/metadata", async (req, res) => {
+    try {
+      log("Getting metadata");
+      const data = await getMetadata(mapeoConfigFolder);
+      log("Got metadata", data);
+      res.json(data);
+      debugLog(`Served metadata`);
+    } catch (error) {
+      res
+        .status(500)
+        .json({ error: "Failed to get metadata", message: error.message });
+      debugLog("Error serving metadata", error);
+    }
+  });
+
+  app.get("/api/stylesheet", async (req, res) => {
+    try {
+      log("Getting stylesheet");
+      const data = await getStylesheet(mapeoConfigFolder);
+      log("Got stylesheet", data.length);
+      res.header("Content-Type", "text/css");
+      res.send(data);
+      debugLog(`Served stylesheet: ${data.length} bytes`);
+    } catch (error) {
+      res
+        .status(500)
+        .json({ error: "Failed to get stylesheet", message: error.message });
+      debugLog("Error serving stylesheet", error);
+    }
+  });
+
+  app.get("/api/config", async (req, res) => {
+    try {
+      log("Getting complete configuration");
+      const hostname = req.hostname;
+      const protocol = req.protocol;
+      const data = await getConfig(mapeoConfigFolder, {
+        protocol,
+        hostname,
+        port,
+      });
+      log("Got configuration", {
+        presets: data.presets.length,
+        fields: data.fields.length,
+        messages: Object.keys(data.messages).length,
+        format: data._format,
+      });
+      res.json(data);
+      debugLog(`Served complete configuration`);
+    } catch (error) {
+      res
+        .status(500)
+        .json({ error: "Failed to get configuration", message: error.message });
+      debugLog("Error serving configuration", error);
+    }
   });
 
   server.listen(port, () => {
