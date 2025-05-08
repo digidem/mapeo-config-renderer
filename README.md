@@ -33,14 +33,38 @@ You can also pass an argument `<mapeo config folder path>` with the path to your
 
 ### Library Usage
 
-You can also use Mapeo Config Renderer as a library in your Node.js projects:
+You can also use Mapeo Config Renderer as a library in your Node.js projects. It supports both legacy Mapeo and new CoMapeo formats.
 
 ```javascript
 // Import the entire library
 const mapeoConfigRenderer = require("mapeo-config-renderer");
 
 // Or import specific functions
-const { getPresets, getFields, getIcon } = require("mapeo-config-renderer");
+const {
+  getPresets,
+  getFields,
+  getIcon,
+  getMessages,
+  getDefaults,
+  getMetadata,
+  getStylesheet,
+  getConfig,
+} = require("mapeo-config-renderer");
+
+// Example: Parse the entire configuration
+const configDir = "/path/to/mapeo-config";
+getConfig(configDir)
+  .then((config) => {
+    console.log("Configuration loaded:", {
+      presets: config.presets.length,
+      fields: config.fields.length,
+      messages: Object.keys(config.messages).length,
+      format: config._format, // 'legacy' or 'comapeo'
+    });
+  })
+  .catch((err) => {
+    console.error("Error loading configuration:", err);
+  });
 
 // Example: Get presets from a configuration folder
 const presetsDir = "/path/to/config/presets";
@@ -71,6 +95,43 @@ getIcon(iconPath)
   .catch((err) => {
     console.error("Error loading icon:", err);
   });
+
+// Example: Get translation messages
+const messagesDir = "/path/to/config/messages";
+getMessages(messagesDir)
+  .then((messages) => {
+    console.log("Found translations for languages:", Object.keys(messages));
+  })
+  .catch((err) => {
+    console.error("Error loading messages:", err);
+  });
+
+// Example: Get defaults.json
+getDefaults("/path/to/config")
+  .then((defaults) => {
+    console.log("Default settings:", defaults);
+  })
+  .catch((err) => {
+    console.error("Error loading defaults:", err);
+  });
+
+// Example: Get metadata.json
+getMetadata("/path/to/config")
+  .then((metadata) => {
+    console.log("Configuration metadata:", metadata);
+  })
+  .catch((err) => {
+    console.error("Error loading metadata:", err);
+  });
+
+// Example: Get style.css
+getStylesheet("/path/to/config")
+  .then((css) => {
+    console.log("Custom stylesheet loaded:", css.length, "bytes");
+  })
+  .catch((err) => {
+    console.error("Error loading stylesheet:", err);
+  });
 ```
 
 ## Development
@@ -85,6 +146,27 @@ In the project directory, you can run:
 - `npm run test:all`: Runs all tests
 - `npm run lint`: Formats code using Prettier
 - `npm run lint:check`: Checks code formatting without making changes
+- `npm run generate:fixtures`: Generates test fixtures for both legacy Mapeo and CoMapeo formats
+- `npm run test:fixtures`: Generates fixtures and tests the library with them
+
+### Test Fixtures
+
+The project includes scripts to generate test fixtures for both legacy Mapeo and CoMapeo formats. These fixtures can be used to test the library with realistic data.
+
+- **Legacy Mapeo Fixture**: A complete legacy Mapeo configuration with presets, fields, and icons.
+- **CoMapeo Fixture**: A complete CoMapeo configuration with presets, fields, messages, icons, defaults.json, metadata.json, and style.css.
+
+To generate the fixtures, run:
+
+```
+npm run generate:fixtures
+```
+
+To test the library with the fixtures, run:
+
+```
+npm run test:fixtures
+```
 
 ### Pre-commit Hooks
 
