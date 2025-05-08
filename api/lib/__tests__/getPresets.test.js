@@ -6,6 +6,7 @@ const log = require("../log");
 // Mock dependencies
 jest.mock("fs", () => ({
   promises: {
+    access: jest.fn(),
     readdir: jest.fn(),
     readFile: jest.fn(),
     lstat: jest.fn(),
@@ -34,6 +35,7 @@ describe("getPresets", () => {
     };
 
     // Setup mocks
+    fs.access.mockResolvedValue(undefined);
     fs.readdir.mockResolvedValue(mockFiles);
     fs.lstat.mockResolvedValue({ isDirectory: () => false });
     fs.readFile.mockImplementation((filePath) => {
@@ -62,7 +64,7 @@ describe("getPresets", () => {
     expect(result[0].name).toBe("Preset 2");
     expect(result[1].name).toBe("Preset 1");
 
-    // Check iconPath construction
+    // Check iconPath construction (legacy format)
     expect(result[0].iconPath).toBe(
       "http://localhost:5000/icons/icon2-100px.svg",
     );
@@ -73,6 +75,10 @@ describe("getPresets", () => {
     // Check slug addition
     expect(result[0].slug).toBe("preset2");
     expect(result[1].slug).toBe("preset1");
+
+    // Check format indicator
+    expect(result[0]._format).toBe("legacy");
+    expect(result[1]._format).toBe("legacy");
   });
 
   it("should sort presets by name when sort values are the same", async () => {
@@ -90,6 +96,7 @@ describe("getPresets", () => {
     };
 
     // Setup mocks
+    fs.access.mockResolvedValue(undefined);
     fs.readdir.mockResolvedValue(mockFiles);
     fs.lstat.mockResolvedValue({ isDirectory: () => false });
     fs.readFile.mockImplementation((filePath) => {
@@ -123,6 +130,7 @@ describe("getPresets", () => {
     };
 
     // Setup mocks
+    fs.access.mockResolvedValue(undefined);
     fs.readdir.mockResolvedValue(mockFiles);
     fs.lstat.mockResolvedValue({ isDirectory: () => false });
     fs.readFile.mockImplementation((filePath) => {
@@ -150,22 +158,22 @@ describe("getPresets", () => {
 
   it("should handle empty directory", async () => {
     // Setup mocks
+    fs.access.mockResolvedValue(undefined);
     fs.readdir.mockResolvedValue([]);
 
-    // Call the function and expect it to throw
-    await expect(getPresets("/mock/path")).rejects.toThrow(
-      "Failed to read presets directory",
-    );
+    // Call the function - should return empty array, not throw
+    const result = await getPresets("/mock/path");
+    expect(result).toEqual([]);
   });
 
   it("should handle errors when reading directory", async () => {
     // Setup mocks
+    fs.access.mockResolvedValue(undefined);
     fs.readdir.mockRejectedValue(new Error("Directory not found"));
 
-    // Call the function and expect it to throw
-    await expect(getPresets("/mock/path")).rejects.toThrow(
-      "Failed to read presets directory",
-    );
+    // Call the function - should return empty array, not throw
+    const result = await getPresets("/mock/path");
+    expect(result).toEqual([]);
   });
 
   it("should filter out directories", async () => {
@@ -174,6 +182,7 @@ describe("getPresets", () => {
     const mockPreset1 = { name: "Preset 1", icon: "icon1" };
 
     // Setup mocks
+    fs.access.mockResolvedValue(undefined);
     fs.readdir.mockResolvedValue(mockFiles);
     fs.lstat.mockImplementation((filePath) => {
       if (filePath.includes("subdir")) {
@@ -196,5 +205,43 @@ describe("getPresets", () => {
     expect(result[0].name).toBe("Preset 1");
     // Should use just the protocol as baseUrl
     expect(result[0].iconPath).toBe("httpicons/icon1-100px.svg");
+  });
+
+  it("should handle CoMapeo format presets", async () => {
+    // Mock data
+    const mockFiles = ["river.json"];
+    const mockCoMapeoPreset = {
+      name: "River",
+      icon: "river",
+      color: "#0000FF",
+      fields: ["name", "notes"],
+      geometry: ["line"],
+      tags: {
+        natural: "water",
+        water: "river",
+      },
+    };
+
+    // Setup mocks
+    fs.access.mockResolvedValue(undefined);
+    fs.readdir.mockResolvedValue(mockFiles);
+    fs.lstat.mockResolvedValue({ isDirectory: () => false });
+    fs.readFile.mockImplementation((filePath) => {
+      if (filePath.includes("river.json")) {
+        return Promise.resolve(JSON.stringify(mockCoMapeoPreset));
+      }
+      return Promise.resolve("{}");
+    });
+
+    // Call the function
+    const result = await getPresets("/mock/path", "http", "localhost", "5000");
+
+    // Assertions
+    expect(result).toHaveLength(1);
+    expect(result[0].name).toBe("River");
+    // Check iconPath construction (CoMapeo format - no -100px suffix)
+    expect(result[0].iconPath).toBe("http://localhost:5000/icons/river.svg");
+    // Check format indicator
+    expect(result[0]._format).toBe("comapeo");
   });
 });

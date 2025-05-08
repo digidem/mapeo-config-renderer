@@ -1,14 +1,19 @@
 const fs = require("fs").promises;
 const path = require("path");
 const getFields = require("../getFields");
+const log = require("../log");
 
-// Mock fs.promises
+// Mock dependencies
 jest.mock("fs", () => ({
   promises: {
+    access: jest.fn(),
     readdir: jest.fn(),
     readFile: jest.fn(),
+    lstat: jest.fn(),
   },
 }));
+
+jest.mock("../log", () => jest.fn());
 
 describe("getFields", () => {
   beforeEach(() => {
@@ -22,7 +27,9 @@ describe("getFields", () => {
     const mockField2 = { id: "field2", name: "Field 2" };
 
     // Setup mocks
+    fs.access.mockResolvedValue(undefined);
     fs.readdir.mockResolvedValue(mockFiles);
+    fs.lstat.mockResolvedValue({ isDirectory: () => false });
     fs.readFile.mockImplementation((filePath) => {
       if (filePath.includes("field1.json")) {
         return Promise.resolve(JSON.stringify(mockField1));
@@ -40,8 +47,9 @@ describe("getFields", () => {
     expect(fs.readdir).toHaveBeenCalledWith(fieldsDir);
     expect(fs.readFile).toHaveBeenCalledTimes(2);
     expect(result).toHaveLength(2);
-    expect(result).toContainEqual(mockField1);
-    expect(result).toContainEqual(mockField2);
+    // The result will include key and _format properties
+    expect(result[0]).toMatchObject(mockField1);
+    expect(result[1]).toMatchObject(mockField2);
   });
 
   it("should filter out non-JSON files", async () => {
@@ -50,7 +58,9 @@ describe("getFields", () => {
     const mockField1 = { id: "field1", name: "Field 1" };
 
     // Setup mocks
+    fs.access.mockResolvedValue(undefined);
     fs.readdir.mockResolvedValue(mockFiles);
+    fs.lstat.mockResolvedValue({ isDirectory: () => false });
     fs.readFile.mockImplementation((filePath) => {
       if (filePath.includes("field1.json")) {
         return Promise.resolve(JSON.stringify(mockField1));
@@ -64,11 +74,12 @@ describe("getFields", () => {
     // Assertions
     expect(fs.readFile).toHaveBeenCalledTimes(1);
     expect(result).toHaveLength(1);
-    expect(result[0]).toEqual(mockField1);
+    expect(result[0]).toMatchObject(mockField1);
   });
 
   it("should handle empty directory", async () => {
     // Setup mocks
+    fs.access.mockResolvedValue(undefined);
     fs.readdir.mockResolvedValue([]);
 
     // Call the function
@@ -81,9 +92,11 @@ describe("getFields", () => {
 
   it("should handle errors when reading directory", async () => {
     // Setup mocks
+    fs.access.mockResolvedValue(undefined);
     fs.readdir.mockRejectedValue(new Error("Directory not found"));
 
-    // Call the function and expect it to throw
-    await expect(getFields("/mock/path")).rejects.toThrow();
+    // Call the function - should return empty array, not throw
+    const result = await getFields("/mock/path");
+    expect(result).toEqual([]);
   });
 });
