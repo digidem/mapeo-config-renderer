@@ -113,11 +113,45 @@ function runApp(mapeoConfigFolder, appPort, headless) {
     const iconName = req.params.iconName;
     const iconsDir = path.join(mapeoConfigFolder, "icons");
     const iconPath = path.join(iconsDir, iconName);
+
     try {
-      const data = await getIcon(iconPath);
-      res.header("Content-Type", "image/svg+xml");
-      res.send(data);
-      debugLog(`Served icon: ${iconName}`);
+      // First try the exact path as requested
+      let data = await getIcon(iconPath);
+
+      // If the icon wasn't found and has -100px suffix, try without it
+      if (data.error && iconName.endsWith("-100px.svg")) {
+        const baseName = iconName.replace("-100px.svg", ".svg");
+        const altPath = path.join(iconsDir, baseName);
+        const altData = await getIcon(altPath);
+
+        if (!altData.error) {
+          data = altData;
+        }
+      }
+
+      // If the icon wasn't found and doesn't have -100px suffix, try with it
+      if (
+        data.error &&
+        iconName.endsWith(".svg") &&
+        !iconName.includes("-100px")
+      ) {
+        const baseName = iconName.replace(".svg", "-100px.svg");
+        const altPath = path.join(iconsDir, baseName);
+        const altData = await getIcon(altPath);
+
+        if (!altData.error) {
+          data = altData;
+        }
+      }
+
+      if (data.error) {
+        res.status(404).json({ error: "Icon not found." });
+        debugLog(`Failed to serve icon: ${iconName}`);
+      } else {
+        res.header("Content-Type", "image/svg+xml");
+        res.send(data);
+        debugLog(`Served icon: ${iconName}`);
+      }
     } catch (err) {
       res.status(404).json({ error: "Icon not found.", message: err });
       debugLog(`Failed to serve icon: ${iconName}`, err);
