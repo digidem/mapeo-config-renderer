@@ -1,0 +1,161 @@
+.preset-detail {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.preset-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #e0e0e0;
+  background-color: #f8f8f8;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.back-button {
+  font-size: 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #007aff;
+  padding: 0;
+  margin: 0;
+}
+
+.preset-title {
+  font-size: 18px;
+  font-weight: 600;
+  flex-grow: 1;
+  text-align: center;
+}
+
+.done-button {
+  color: #007aff;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.preset-fields {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.field {
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 24px;
+}
+
+.field:last-child {
+  border-bottom: none;
+}
+
+.field-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field-label {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.field-input {
+  padding: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+.field-helper {
+  font-size: 14px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.select-options {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.select-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.radio-button {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #999;
+  border-radius: 50%;
+}
+
+.checkbox {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #999;
+  border-radius: 4px;
+}
+
+.option-label {
+  font-size: 16px;
+}
+
+.loading,
+.not-found {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  font-size: 18px;
+  color: #666;
+}
+
+/* Ensure the phone frame styling is consistent */
+.phone-outer-frame {
+  background: #e0e0e0;
+  width: 360px;
+  border-radius: 36px;
+  padding: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  margin: auto;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+
+.phone-frame {
+  width: 100%;
+  height: 100%;
+  border-radius: 24px;
+  overflow: hidden;
+  background: white;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.bottom-circle {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 40px;
+  background-color: #e0e0e0;
+  border-radius: 50%;
+  border: 1px solid #ccc;
+}

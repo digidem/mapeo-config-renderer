@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "./IconGrid.css";
 import axios from "axios";
 import io from "socket.io-client";
@@ -9,7 +10,6 @@ const socket = io("http://localhost:5000");
 const fetchPresets = async () => {
   try {
     const { data } = await axios.get("http://localhost:5000/api/presets");
-    console.log("response", data);
     return data.data ? data.data : data;
   } catch (error) {
     console.error("Failed to fetch presets:", error);
@@ -19,6 +19,7 @@ const fetchPresets = async () => {
 
 const IconGrid = () => {
   const [presets, setPresets] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -36,47 +37,58 @@ const IconGrid = () => {
     // Clean up the effect
     return () => socket.off("presets:update");
   }, []);
-  console.log("packageJson", packageJson.version);
+
+  const handlePresetClick = (preset) => {
+    navigate(`/preset/${preset.name}`);
+  };
+
   return (
     <div className="phone-outer-frame">
-      <div className="version-info">
-        {process.packageJson.version && (
-          <span>Version: {process.packageJson.version}</span>
-        )}
-      </div>
-
       <div className="phone-frame">
+        <div className="app-header">
+          <div className="app-title">Mapeo Presets</div>
+          <div className="app-version">{packageJson.version}</div>
+        </div>
+
         <div className="icon-grid">
           {presets && presets.length === 0 && (
-            <span className="vertical-center">Loading...</span>
+            <div className="loading-container">
+              <div className="loading-spinner"></div>
+              <div className="loading-text">Loading presets...</div>
+            </div>
           )}
+
           {presets &&
             presets.map((preset) => (
-              <div key={preset.name} className="icon-container">
+              <div
+                key={preset.name}
+                className="icon-container"
+                onClick={() => handlePresetClick(preset)}
+              >
                 <div
                   className="icon"
                   style={{
-                    backgroundColor: "white",
                     borderColor: preset.color,
-                    borderWidth: 3.5,
                   }}
                 >
                   <img
                     src={preset.iconPath}
                     alt={preset.name}
-                    style={{ maxWidth: "35px", height: "35px" }}
+                    className="icon-image"
                   />
                 </div>
                 <div className="icon-name">{preset.name}</div>
               </div>
             ))}
+
           {!presets && (
-            <span className="vertical-center">
+            <div className="error-message">
               Mapeo configuration folder not detected, make sure you are inside
               or passing the right folder
-            </span>
+            </div>
           )}
         </div>
+
         <div className="bottom-circle"></div>
       </div>
     </div>
