@@ -7,6 +7,7 @@
 
 # testing
 /coverage
+/fixtures
 
 # production
 /build
@@ -18,10 +19,17 @@
 .env.test.local
 .env.production.local
 
+# logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.vscode
 nohup.out
+
+# editors
+.vscode
 .aider*
 .history
+.idea
+
+# husky
+.husky/_
