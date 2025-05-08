@@ -1,6 +1,6 @@
 {
   "name": "mapeo-config-renderer",
-  "version": "1.0.6",
+  "version": "2.0.0",
   "description": "A library and command-line tool for rendering Mapeo configuration files",
   "main": "index.js",
   "exports": {
