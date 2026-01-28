@@ -128,12 +128,31 @@ async function runApp(comapeocatFile, appPort, headless) {
       debugLog(`Failed to serve icon: ${iconName}`, err);
     }
   });
+
+  function normalizeIconPath(iconName, protocol, hostname, port) {
+    let baseUrl = "";
+    if (protocol && hostname && port) {
+      baseUrl = `${protocol}://${hostname}:${port}`;
+    } else if (protocol) {
+      baseUrl = protocol;
+    }
+    return `${baseUrl}/icons/${iconName}`;
+  }
+
   app.get("/api/presets", async (req, res) => {
     try {
-      // const hostname = req.hostname;
-      // const protocol = req.protocol;
+      const hostname = req.hostname;
+      const protocol = req.protocol;
       log("Getting presets");
-      log("Got presets", categories.size);
+      for (let [key, category] of categories) {
+        category.iconPath = normalizeIconPath(
+          category.icon,
+          protocol,
+          hostname,
+          envPort,
+        );
+        categories.set(key, category);
+      }
       res.json(Object.fromEntries(categories));
       debugLog(`Served presets: ${categories.size} items`);
     } catch (error) {
@@ -175,8 +194,6 @@ async function runApp(comapeocatFile, appPort, headless) {
     debugLog(`Served mapeoConfigFolder path: ${comapeocatFile}`);
   });
 
-  // New endpoints for CoMapeo format
-
   app.get("/api/messages", async (req, res) => {
     try {
       log("Getting messages");
@@ -193,21 +210,6 @@ async function runApp(comapeocatFile, appPort, headless) {
     }
   });
 
-  app.get("/api/defaults", async (req, res) => {
-    try {
-      log("Getting defaults");
-      const data = await getDefaults(comapeocatFile);
-      log("Got defaults", data);
-      res.json(data);
-      debugLog(`Served defaults`);
-    } catch (error) {
-      res
-        .status(500)
-        .json({ error: "Failed to get defaults", message: error.message });
-      debugLog("Error serving defaults", error);
-    }
-  });
-
   app.get("/api/metadata", async (req, res) => {
     try {
       log("Getting metadata");
@@ -220,48 +222,6 @@ async function runApp(comapeocatFile, appPort, headless) {
         .status(500)
         .json({ error: "Failed to get metadata", message: error.message });
       debugLog("Error serving metadata", error);
-    }
-  });
-
-  app.get("/api/stylesheet", async (req, res) => {
-    try {
-      log("Getting stylesheet");
-      const data = await getStylesheet(comapeocatFile);
-      log("Got stylesheet", data.length);
-      res.header("Content-Type", "text/css");
-      res.send(data);
-      debugLog(`Served stylesheet: ${data.length} bytes`);
-    } catch (error) {
-      res
-        .status(500)
-        .json({ error: "Failed to get stylesheet", message: error.message });
-      debugLog("Error serving stylesheet", error);
-    }
-  });
-
-  app.get("/api/config", async (req, res) => {
-    try {
-      log("Getting complete configuration");
-      const hostname = req.hostname;
-      const protocol = req.protocol;
-      const data = await getConfig(comapeocatFile, {
-        protocol,
-        hostname,
-        port,
-      });
-      log("Got configuration", {
-        presets: data.presets.length,
-        fields: data.fields.length,
-        messages: Object.keys(data.messages).length,
-        format: data._format,
-      });
-      res.json(data);
-      debugLog(`Served complete configuration`);
-    } catch (error) {
-      res
-        .status(500)
-        .json({ error: "Failed to get configuration", message: error.message });
-      debugLog("Error serving configuration", error);
     }
   });
 

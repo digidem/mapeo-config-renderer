@@ -160,10 +160,7 @@ const PresetDetail = () => {
                     ({preset.appliesTo.join("/")})
                   </span>
                 </div>
-                <img
-                  className="preset-title-icon"
-                  src={"http://localhost:5000/icons/" + preset.icon}
-                ></img>
+                <img className="preset-title-icon" src={preset.iconPath}></img>
               </div>
             ) : (
               "Preset not found"

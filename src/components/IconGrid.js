@@ -3,10 +3,8 @@ import { useNavigate } from "react-router-dom";
 import "./IconGrid.css";
 import axios from "axios";
 import io from "socket.io-client";
-import packageJson from "../../package.json";
 
 const socket = io("http://localhost:5000");
-
 const fetchPresets = async () => {
   try {
     const { data } = await axios.get("http://localhost:5000/api/presets");
@@ -71,7 +69,6 @@ const IconGrid = () => {
       <div className="phone-frame">
         <div className="app-header">
           <div className="app-title">CoMapeo Categories</div>
-          {/* <div className="app-version">{packageJson.version}</div> */}
         </div>
 
         <div className="icon-grid">
@@ -104,7 +101,7 @@ const IconGrid = () => {
                     }}
                   >
                     <img
-                      src={"http://localhost:5000/icons/" + preset.icon}
+                      src={preset.iconPath}
                       alt={preset.name}
                       className="icon-image"
                     />
