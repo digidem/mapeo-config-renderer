@@ -28,11 +28,24 @@
   margin: 0;
 }
 
+.preset-title-container {
+  display:flex;
+  gap:4px;
+}
+
 .preset-title {
   font-size: 18px;
   font-weight: 600;
+  text-align: center;
+}
+
+.preset-appliest-to {
+  font-size: 12px;
+  font-weight: 200;
   flex-grow: 1;
   text-align: center;
+  align-content:center;
+
 }
 
 .done-button {

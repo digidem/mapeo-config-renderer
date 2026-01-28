@@ -37,7 +37,6 @@ const PresetDetail = () => {
       setLoading(true);
       const presetData = await fetchPreset(presetId);
       const fieldsData = await fetchFields();
-
       setPreset(presetData);
 
       // Filter fields to only include those referenced by the preset
@@ -148,13 +147,18 @@ const PresetDetail = () => {
             <button className="back-button" onClick={() => navigate("/")}>
               ←
             </button>
-            <div className="preset-title">
-              {loading
-                ? "Loading..."
-                : preset
-                  ? preset.name
-                  : "Preset not found"}
-            </div>
+            {loading ? (
+              "Loading..."
+            ) : preset ? (
+              <div className="preset-title-container">
+                <p className="preset-title">{preset.name}</p>
+                <span className="preset-appliest-to">
+                  ({preset.appliesTo.join("/")})
+                </span>
+              </div>
+            ) : (
+              "Preset not found"
+            )}
             <div className="done-button" onClick={() => navigate("/")}>
               Done
             </div>

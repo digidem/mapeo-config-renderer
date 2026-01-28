@@ -54,8 +54,9 @@ const IconGrid = () => {
   useEffect(() => {
     const fetchData = async () => {
       const data = await fetchCategorySelection();
+      const jointSelection = [...data.observation, ...data.track];
       setCategorySelection(
-        new Map(data.observation.map((val, idx) => [val, idx])),
+        new Map(jointSelection.map((val, idx) => [val, idx])),
       );
     };
     fetchData();
