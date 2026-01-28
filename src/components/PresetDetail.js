@@ -5,9 +5,10 @@ import "./PresetDetail.css";
 
 const fetchPreset = async (presetId) => {
   try {
-    const { data } = await axios.get("http://localhost:5000/api/presets");
-    const presets = data.data ? data.data : data;
-    return presets.find((preset) => preset.name === presetId);
+    const { data } = await axios.get(
+      "http://localhost:5000/api/preset/" + presetId,
+    );
+    return data;
   } catch (error) {
     console.error("Failed to fetch preset:", error);
     return null;
@@ -41,8 +42,8 @@ const PresetDetail = () => {
 
       // Filter fields to only include those referenced by the preset
       if (presetData && presetData.fields && fieldsData) {
-        const presetFields = fieldsData.filter((field) =>
-          presetData.fields.includes(field.tagKey || field.key),
+        const presetFields = presetData.fields.map(
+          (field) => fieldsData[field],
         );
         setFields(presetFields);
       }

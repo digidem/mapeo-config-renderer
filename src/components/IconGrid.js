@@ -18,7 +18,7 @@ const fetchPresets = async () => {
 };
 
 const IconGrid = () => {
-  const [presets, setPresets] = useState([]);
+  const [presets, setPresets] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -38,16 +38,17 @@ const IconGrid = () => {
     return () => socket.off("presets:update");
   }, []);
 
-  const handlePresetClick = (preset) => {
-    navigate(`/preset/${preset.name}`);
+  const handlePresetClick = (key) => {
+    console.log("HOLA PRE", key);
+    navigate(`/preset/${key}`);
   };
 
   return (
     <div className="phone-outer-frame">
       <div className="phone-frame">
         <div className="app-header">
-          <div className="app-title">Mapeo Presets</div>
-          <div className="app-version">{packageJson.version}</div>
+          <div className="app-title">CoMapeo Categories</div>
+          {/* <div className="app-version">{packageJson.version}</div> */}
         </div>
 
         <div className="icon-grid">
@@ -59,11 +60,11 @@ const IconGrid = () => {
           )}
 
           {presets &&
-            presets.map((preset) => (
+            Object.entries(presets).map(([key, preset]) => (
               <div
-                key={preset.name}
+                key={key}
                 className="icon-container"
-                onClick={() => handlePresetClick(preset)}
+                onClick={() => handlePresetClick(key)}
               >
                 <div
                   className="icon"
@@ -72,7 +73,7 @@ const IconGrid = () => {
                   }}
                 >
                   <img
-                    src={preset.iconPath}
+                    src={"http://localhost:5000/icons/" + preset.icon}
                     alt={preset.name}
                     className="icon-image"
                   />
