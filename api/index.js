@@ -43,6 +43,7 @@ async function runApp(comapeocatFile, appPort, headless) {
   const categories = await reader.categories();
   const categorySelection = await reader.categorySelection();
   const fields = await reader.fields();
+  const metadata = await reader.metadata();
 
   log(`appPort: ${appPort || "not set"}`);
   debugLog(`Starting app with port: ${appPort}`);
@@ -165,7 +166,16 @@ async function runApp(comapeocatFile, appPort, headless) {
 
   app.get("/api/preset/:presetName", async (req, res) => {
     const presetName = req.params.presetName;
-    res.json(categories.get(presetName));
+    const protocol = req.protocol;
+    const hostname = req.hostname;
+    const category = categories.get(presetName);
+    category.iconPath = normalizeIconPath(
+      category.icon,
+      protocol,
+      hostname,
+      envPort,
+    );
+    res.json(category);
   });
 
   app.get("/api/categorySelection", async (req, res) => {
@@ -213,7 +223,8 @@ async function runApp(comapeocatFile, appPort, headless) {
   app.get("/api/metadata", async (req, res) => {
     try {
       log("Getting metadata");
-      const data = await getMetadata(comapeocatFile);
+      const data = metadata;
+      console.log(metadata);
       log("Got metadata", data);
       res.json(data);
       debugLog(`Served metadata`);

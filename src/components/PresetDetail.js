@@ -154,7 +154,7 @@ const PresetDetail = () => {
               "Loading..."
             ) : preset ? (
               <div className="preset-title-container">
-                <div style={{ display: "flex", "flex-direction": "column" }}>
+                <div style={{ display: "flex", flexDirection: "column" }}>
                   <p className="preset-title">{preset.name}</p>
                   <span className="preset-appliest-to">
                     ({preset.appliesTo.join("/")})
