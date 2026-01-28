@@ -6,18 +6,6 @@ const chokidar = require("chokidar");
 const path = require("path");
 const os = require("os");
 
-// Import all utility functions
-const {
-  getIcon,
-  getPresets,
-  getFields,
-  getMessages,
-  getDefaults,
-  getMetadata,
-  getStylesheet,
-  getConfig,
-} = require("./lib");
-
 const DEBUG = process.env.DEBUG === "true";
 
 const debugLog = (...args) => {
@@ -165,17 +153,25 @@ async function runApp(comapeocatFile, appPort, headless) {
   });
 
   app.get("/api/preset/:presetName", async (req, res) => {
-    const presetName = req.params.presetName;
-    const protocol = req.protocol;
-    const hostname = req.hostname;
-    const category = categories.get(presetName);
-    category.iconPath = normalizeIconPath(
-      category.icon,
-      protocol,
-      hostname,
-      envPort,
-    );
-    res.json(category);
+    try {
+      const presetName = req.params.presetName;
+      const protocol = req.protocol;
+      const hostname = req.hostname;
+      const category = categories.get(presetName);
+      category.iconPath = normalizeIconPath(
+        category.icon,
+        protocol,
+        hostname,
+        envPort,
+      );
+      res.json(category);
+    } catch (error) {
+      res.status(500).json({
+        error: "Failed to get preset " + presetName,
+        message: error.message,
+      });
+      debugLog("Error serving fields", error);
+    }
   });
 
   app.get("/api/categorySelection", async (req, res) => {
@@ -205,19 +201,19 @@ async function runApp(comapeocatFile, appPort, headless) {
   });
 
   app.get("/api/messages", async (req, res) => {
-    try {
-      log("Getting messages");
-      const messagesDir = path.join(comapeocatFile, "messages");
-      const data = await getMessages(messagesDir);
-      log("Got messages", Object.keys(data).length);
-      res.json(data);
-      debugLog(`Served messages: ${Object.keys(data).length} languages`);
-    } catch (error) {
-      res
-        .status(500)
-        .json({ error: "Failed to get messages", message: error.message });
-      debugLog("Error serving messages", error);
-    }
+    // try {
+    //   log("Getting messages");
+    //   const messagesDir = path.join(comapeocatFile, "messages");
+    //   const data = await getMessages(messagesDir);
+    //   log("Got messages", Object.keys(data).length);
+    //   res.json(data);
+    //   debugLog(`Served messages: ${Object.keys(data).length} languages`);
+    // } catch (error) {
+    //   res
+    //     .status(500)
+    //     .json({ error: "Failed to get messages", message: error.message });
+    //   debugLog("Error serving messages", error);
+    // }
   });
 
   app.get("/api/metadata", async (req, res) => {
