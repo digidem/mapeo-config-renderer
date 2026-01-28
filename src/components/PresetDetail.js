@@ -59,6 +59,10 @@ const PresetDetail = () => {
         return (
           <div className="field-container">
             <div className="field-label">{field.label}</div>
+            {field.helperText && (
+              <div className="field-helper">{field.helperText}</div>
+            )}
+
             <input
               type="text"
               className="field-input"
@@ -66,9 +70,6 @@ const PresetDetail = () => {
                 field.placeholder || `Enter ${field.label.toLowerCase()}`
               }
             />
-            {field.helperText && (
-              <div className="field-helper">{field.helperText}</div>
-            )}
           </div>
         );
 
@@ -76,6 +77,10 @@ const PresetDetail = () => {
         return (
           <div className="field-container">
             <div className="field-label">{field.label}</div>
+
+            {field.helperText && (
+              <div className="field-helper">{field.helperText}</div>
+            )}
             <input
               type="number"
               className="field-input"
@@ -83,9 +88,6 @@ const PresetDetail = () => {
                 field.placeholder || `Enter ${field.label.toLowerCase()}`
               }
             />
-            {field.helperText && (
-              <div className="field-helper">{field.helperText}</div>
-            )}
           </div>
         );
 
@@ -93,6 +95,10 @@ const PresetDetail = () => {
         return (
           <div className="field-container">
             <div className="field-label">{field.label}</div>
+            {field.helperText && (
+              <div className="field-helper">{field.helperText}</div>
+            )}
+
             <div className="select-options">
               {field.options &&
                 field.options.map((option) => (
@@ -102,9 +108,6 @@ const PresetDetail = () => {
                   </div>
                 ))}
             </div>
-            {field.helperText && (
-              <div className="field-helper">{field.helperText}</div>
-            )}
           </div>
         );
 
@@ -112,6 +115,9 @@ const PresetDetail = () => {
         return (
           <div className="field-container">
             <div className="field-label">{field.label}</div>
+            {field.helperText && (
+              <div className="field-helper">{field.helperText}</div>
+            )}
             <div className="select-options">
               {field.options &&
                 field.options.map((option) => (
@@ -121,9 +127,6 @@ const PresetDetail = () => {
                   </div>
                 ))}
             </div>
-            {field.helperText && (
-              <div className="field-helper">{field.helperText}</div>
-            )}
           </div>
         );
 
@@ -151,10 +154,16 @@ const PresetDetail = () => {
               "Loading..."
             ) : preset ? (
               <div className="preset-title-container">
-                <p className="preset-title">{preset.name}</p>
-                <span className="preset-appliest-to">
-                  ({preset.appliesTo.join("/")})
-                </span>
+                <div style={{ display: "flex", "flex-direction": "column" }}>
+                  <p className="preset-title">{preset.name}</p>
+                  <span className="preset-appliest-to">
+                    ({preset.appliesTo.join("/")})
+                  </span>
+                </div>
+                <img
+                  className="preset-title-icon"
+                  src={"http://localhost:5000/icons/" + preset.icon}
+                ></img>
               </div>
             ) : (
               "Preset not found"
