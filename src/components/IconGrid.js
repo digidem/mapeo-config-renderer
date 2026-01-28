@@ -5,12 +5,23 @@ import axios from "axios";
 import io from "socket.io-client";
 
 const socket = io("http://localhost:5000");
+
 const fetchPresets = async () => {
   try {
     const { data } = await axios.get("http://localhost:5000/api/presets");
     return data.data ? data.data : data;
   } catch (error) {
     console.error("Failed to fetch presets:", error);
+    return null;
+  }
+};
+
+const fetchMetadata = async () => {
+  try {
+    const { data } = await axios.get("http://localhost:5000/api/metadata");
+    return data.data ? data.data : data;
+  } catch (error) {
+    console.error("Failed to fetch metadata:", error);
     return null;
   }
 };
@@ -30,6 +41,7 @@ const fetchCategorySelection = async () => {
 const IconGrid = () => {
   const [presets, setPresets] = useState({});
   const [categorySelection, setCategorySelection] = useState(new Map());
+  const [metadata, setMetadata] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -60,6 +72,13 @@ const IconGrid = () => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await fetchMetadata();
+      setMetadata(data);
+    };
+    fetchData();
+  }, []);
   const handlePresetClick = (key) => {
     navigate(`/preset/${key}`);
   };
@@ -68,7 +87,10 @@ const IconGrid = () => {
     <div className="phone-outer-frame">
       <div className="phone-frame">
         <div className="app-header">
-          <div className="app-title">CoMapeo Categories</div>
+          <div className="app-title">{metadata && metadata.name}</div>
+          <span className="app-title-date">
+            {metadata && new Date(metadata.buildDateValue).toLocaleDateString()}
+          </span>
         </div>
 
         <div className="icon-grid">
