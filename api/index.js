@@ -41,6 +41,7 @@ async function runApp(comapeocatFile, appPort, headless) {
   const { Reader } = await import("comapeocat");
   const reader = new Reader(comapeocatFile);
   const categories = await reader.categories();
+  const categorySelection = await reader.categorySelection();
   const fields = await reader.fields();
 
   log(`appPort: ${appPort || "not set"}`);
@@ -146,6 +147,10 @@ async function runApp(comapeocatFile, appPort, headless) {
   app.get("/api/preset/:presetName", async (req, res) => {
     const presetName = req.params.presetName;
     res.json(categories.get(presetName));
+  });
+
+  app.get("/api/categorySelection", async (req, res) => {
+    res.json(categorySelection);
   });
 
   app.get("/api/fields", async (req, res) => {

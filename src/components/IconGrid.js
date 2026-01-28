@@ -17,8 +17,21 @@ const fetchPresets = async () => {
   }
 };
 
+const fetchCategorySelection = async () => {
+  try {
+    const { data } = await axios.get(
+      "http://localhost:5000/api/categorySelection",
+    );
+    return data.data ? data.data : data;
+  } catch (error) {
+    console.error("Failed to fetch categorySelection:", error);
+    return null;
+  }
+};
+
 const IconGrid = () => {
   const [presets, setPresets] = useState({});
+  const [categorySelection, setCategorySelection] = useState(new Map());
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -38,8 +51,17 @@ const IconGrid = () => {
     return () => socket.off("presets:update");
   }, []);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await fetchCategorySelection();
+      setCategorySelection(
+        new Map(data.observation.map((val, idx) => [val, idx])),
+      );
+    };
+    fetchData();
+  }, []);
+
   const handlePresetClick = (key) => {
-    console.log("HOLA PRE", key);
     navigate(`/preset/${key}`);
   };
 
@@ -60,27 +82,35 @@ const IconGrid = () => {
           )}
 
           {presets &&
-            Object.entries(presets).map(([key, preset]) => (
-              <div
-                key={key}
-                className="icon-container"
-                onClick={() => handlePresetClick(key)}
-              >
+            Object.entries(presets)
+              .sort((a, b) => {
+                const [key1] = a;
+                const [key2] = b;
+                return (
+                  categorySelection.get(key1) - categorySelection.get(key2)
+                );
+              })
+              .map(([key, preset]) => (
                 <div
-                  className="icon"
-                  style={{
-                    borderColor: preset.color,
-                  }}
+                  key={key}
+                  className="icon-container"
+                  onClick={() => handlePresetClick(key)}
                 >
-                  <img
-                    src={"http://localhost:5000/icons/" + preset.icon}
-                    alt={preset.name}
-                    className="icon-image"
-                  />
+                  <div
+                    className="icon"
+                    style={{
+                      borderColor: preset.color,
+                    }}
+                  >
+                    <img
+                      src={"http://localhost:5000/icons/" + preset.icon}
+                      alt={preset.name}
+                      className="icon-image"
+                    />
+                  </div>
+                  <div className="icon-name">{preset.name}</div>
                 </div>
-                <div className="icon-name">{preset.name}</div>
-              </div>
-            ))}
+              ))}
 
           {!presets && (
             <div className="error-message">
