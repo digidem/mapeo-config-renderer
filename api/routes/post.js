@@ -1,7 +1,8 @@
 const log = require("../lib/log");
 const multer = require("multer");
-const crypto = require("crypto");
 const fs = require("fs/promises");
+
+const hashFile = require("../lib/hashFile.js");
 
 /**
   @param {Express} app
@@ -27,7 +28,7 @@ function post(app) {
     if (!req.file) {
       return res.status(400).send("No file uploaded");
     }
-    const id = crypto.randomUUID();
+    const id = await hashFile(req.file.path);
     const newPath = `/tmp/${id}.comapeocat`;
     await fs.rename(req.file.path, newPath);
     log("new file path", req.file.path);
