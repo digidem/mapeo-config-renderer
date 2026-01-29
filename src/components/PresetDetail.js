@@ -157,7 +157,7 @@ const PresetDetail = () => {
                 <div style={{ display: "flex", flexDirection: "column" }}>
                   <p className="preset-title">{preset.name}</p>
                   <span className="preset-appliest-to">
-                    ({preset.appliesTo.join("/")})
+                    ({preset.appliesTo.join(" / ")})
                   </span>
                 </div>
                 <img className="preset-title-icon" src={preset.iconPath}></img>

@@ -33,6 +33,10 @@ async function runApp(comapeocatFile, appPort, headless) {
   const fields = await reader.fields();
   const metadata = await reader.metadata();
 
+  // for await (const { lang, translations } of reader.translations()) {
+  //   console.log(lang, translations);
+  // }
+
   log(`appPort: ${appPort || "not set"}`);
   debugLog(`Starting app with port: ${appPort}`);
   const port = appPort || envPort;
@@ -117,16 +121,6 @@ async function runApp(comapeocatFile, appPort, headless) {
       debugLog(`Failed to serve icon: ${iconName}`, err);
     }
   });
-
-  function normalizeIconPath(iconName, protocol, hostname, port) {
-    let baseUrl = "";
-    if (protocol && hostname && port) {
-      baseUrl = `${protocol}://${hostname}:${port}`;
-    } else if (protocol) {
-      baseUrl = protocol;
-    }
-    return `${baseUrl}/icons/${iconName}`;
-  }
 
   app.get("/api/presets", async (req, res) => {
     try {
@@ -236,6 +230,16 @@ async function runApp(comapeocatFile, appPort, headless) {
     console.log(`Server running at http://${hostname}:${port}`);
     debugLog(`Server started on port: ${port}`);
   });
+}
+
+function normalizeIconPath(iconName, protocol, hostname, port) {
+  let baseUrl = "";
+  if (protocol && hostname && port) {
+    baseUrl = `${protocol}://${hostname}:${port}`;
+  } else if (protocol) {
+    baseUrl = protocol;
+  }
+  return `${baseUrl}/icons/${iconName}`;
 }
 
 module.exports = runApp;
