@@ -5,6 +5,7 @@ const events = require("events");
 const chokidar = require("chokidar");
 const path = require("path");
 const os = require("os");
+const multer = require("multer");
 
 const DEBUG = process.env.DEBUG === "true";
 
@@ -27,11 +28,7 @@ async function runApp(comapeocatFile, appPort, headless) {
   const server = http.createServer(app);
 
   const { Reader } = await import("comapeocat");
-  const reader = new Reader(comapeocatFile);
-  const categories = await reader.categories();
-  const categorySelection = await reader.categorySelection();
-  const fields = await reader.fields();
-  const metadata = await reader.metadata();
+  let catfile = await loadCatfile(Reader, comapeocatFile);
 
   // for await (const { lang, translations } of reader.translations()) {
   //   console.log(lang, translations);
@@ -101,25 +98,35 @@ async function runApp(comapeocatFile, appPort, headless) {
       }
     });
 
-  app.get("/icons/:iconName", async (req, res) => {
-    const iconName = req.params.iconName;
-
-    try {
-      // First try the exact path as requested
-      let data = await reader.getIcon(iconName);
-
-      if (!data) {
-        res.status(404).json({ error: "Icon not found." });
-        debugLog(`Failed to serve icon: ${iconName}`);
-      } else {
-        res.header("Content-Type", "image/svg+xml");
-        res.send(data);
-        debugLog(`Served icon: ${iconName}`);
+  // ENDPOINTS
+  const storage = multer.diskStorage({
+    destination: "/tmp",
+    filename: (req, file, cb) => {
+      cb(null, Date.now() + "-" + file.originalname);
+    },
+  });
+  const upload = multer({
+    storage,
+    fileFilter: (req, file, cb) => {
+      if (!file.originalname.endsWith(".comapeocat")) {
+        return cb(new Error("Only .comapeocat files allowed"));
       }
-    } catch (err) {
-      res.status(404).json({ error: "Icon not found.", message: err });
-      debugLog(`Failed to serve icon: ${iconName}`, err);
+      cb(null, true);
+    },
+  });
+
+  app.post("/upload", upload.single("categories"), async (req, res) => {
+    if (!req.file) {
+      return res.status(400).send("No file uploaded");
     }
+    console.log("new file path", req.file.path);
+    catfile = await loadCatfile(Reader, req.file.path);
+    res.redirect("http://localhost:3000/");
+    // res.redirect("/");
+    // res.json({
+    //   message: "File uploaded",
+    //   path: req.file.path,
+    // });
   });
 
   app.get("/api/presets", async (req, res) => {
@@ -127,17 +134,17 @@ async function runApp(comapeocatFile, appPort, headless) {
       const hostname = req.hostname;
       const protocol = req.protocol;
       log("Getting presets");
-      for (let [key, category] of categories) {
+      for (let [key, category] of catfile.categories) {
         category.iconPath = normalizeIconPath(
           category.icon,
           protocol,
           hostname,
           envPort,
         );
-        categories.set(key, category);
+        catfile.categories.set(key, category);
       }
-      res.json(Object.fromEntries(categories));
-      debugLog(`Served presets: ${categories.size} items`);
+      res.json(Object.fromEntries(catfile.categories));
+      debugLog(`Served presets: ${catfile.categories.size} items`);
     } catch (error) {
       res
         .status(500)
@@ -151,7 +158,7 @@ async function runApp(comapeocatFile, appPort, headless) {
       const presetName = req.params.presetName;
       const protocol = req.protocol;
       const hostname = req.hostname;
-      const category = categories.get(presetName);
+      const category = catfile.categories.get(presetName);
       category.iconPath = normalizeIconPath(
         category.icon,
         protocol,
@@ -169,13 +176,13 @@ async function runApp(comapeocatFile, appPort, headless) {
   });
 
   app.get("/api/categorySelection", async (req, res) => {
-    res.json(categorySelection);
+    res.json(catfile.categorySelection);
   });
 
   app.get("/api/fields", async (req, res) => {
     try {
       log("Getting fields");
-      const data = fields;
+      const data = catfile.fields;
       log("Got fields", data.size);
       res.json(Object.fromEntries(data));
       debugLog(`Served fields: ${data.size} items`);
@@ -184,6 +191,27 @@ async function runApp(comapeocatFile, appPort, headless) {
         .status(500)
         .json({ error: "Failed to get fields", message: error.message });
       debugLog("Error serving fields", error);
+    }
+  });
+
+  app.get("/icons/:iconName", async (req, res) => {
+    const iconName = req.params.iconName;
+
+    try {
+      // First try the exact path as requested
+      let data = await catfile.reader.getIcon(iconName);
+
+      if (!data) {
+        res.status(404).json({ error: "Icon not found." });
+        debugLog(`Failed to serve icon: ${iconName}`);
+      } else {
+        res.header("Content-Type", "image/svg+xml");
+        res.send(data);
+        debugLog(`Served icon: ${iconName}`);
+      }
+    } catch (err) {
+      res.status(404).json({ error: "Icon not found.", message: err });
+      debugLog(`Failed to serve icon: ${iconName}`, err);
     }
   });
 
@@ -213,8 +241,7 @@ async function runApp(comapeocatFile, appPort, headless) {
   app.get("/api/metadata", async (req, res) => {
     try {
       log("Getting metadata");
-      const data = metadata;
-      console.log(metadata);
+      const data = catfile.metadata;
       log("Got metadata", data);
       res.json(data);
       debugLog(`Served metadata`);
@@ -240,6 +267,15 @@ function normalizeIconPath(iconName, protocol, hostname, port) {
     baseUrl = protocol;
   }
   return `${baseUrl}/icons/${iconName}`;
+}
+
+async function loadCatfile(Reader, path) {
+  const reader = new Reader(path);
+  const categories = await reader.categories();
+  const categorySelection = await reader.categorySelection();
+  const fields = await reader.fields();
+  const metadata = await reader.metadata();
+  return { reader, categories, categorySelection, fields, metadata };
 }
 
 module.exports = runApp;
