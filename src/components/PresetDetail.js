@@ -3,11 +3,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./PresetDetail.css";
 
-const fetchPreset = async (presetId) => {
+const API_ROOT = "http://localhost:5000/api/catfile";
+
+const fetchPreset = async (catfile, presetId) => {
   try {
-    const { data } = await axios.get(
-      "http://localhost:5000/api/preset/" + presetId,
-    );
+    const url = `${API_ROOT}/${catfile}/preset/${presetId}`;
+    const { data } = await axios.get(url);
     return data;
   } catch (error) {
     console.error("Failed to fetch preset:", error);
@@ -15,9 +16,10 @@ const fetchPreset = async (presetId) => {
   }
 };
 
-const fetchFields = async () => {
+const fetchFields = async (catfile) => {
   try {
-    const { data } = await axios.get("http://localhost:5000/api/fields");
+    const url = `${API_ROOT}/${catfile}/fields`;
+    const { data } = await axios.get(url);
     return data;
   } catch (error) {
     console.error("Failed to fetch fields:", error);
@@ -26,7 +28,7 @@ const fetchFields = async () => {
 };
 
 const PresetDetail = () => {
-  const { presetId } = useParams();
+  const { presetId, catfile } = useParams();
   const navigate = useNavigate();
   const [preset, setPreset] = useState(null);
   const [fields, setFields] = useState([]);
@@ -35,8 +37,8 @@ const PresetDetail = () => {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const presetData = await fetchPreset(presetId);
-      const fieldsData = await fetchFields();
+      const presetData = await fetchPreset(catfile, presetId);
+      const fieldsData = await fetchFields(catfile);
       setPreset(presetData);
 
       // Filter fields to only include those referenced by the preset
@@ -147,7 +149,10 @@ const PresetDetail = () => {
       <div className="phone-frame">
         <div className="preset-detail">
           <div className="preset-header">
-            <button className="back-button" onClick={() => navigate("/")}>
+            <button
+              className="back-button"
+              onClick={() => navigate(`/catfile/${catfile}`)}
+            >
               ←
             </button>
             {loading ? (

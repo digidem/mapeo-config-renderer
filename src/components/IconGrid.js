@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import "./IconGrid.css";
 import axios from "axios";
 import io from "socket.io-client";
 
+const API_ROOT = "http://localhost:5000/api/catfile";
 const socket = io("http://localhost:5000");
 
-const fetchPresets = async () => {
+const fetchPresets = async (catfile) => {
   try {
-    const { data } = await axios.get("http://localhost:5000/api/presets");
+    const { data } = await axios.get(`${API_ROOT}/${catfile}/presets`);
     return data.data ? data.data : data;
   } catch (error) {
     console.error("Failed to fetch presets:", error);
@@ -16,9 +17,9 @@ const fetchPresets = async () => {
   }
 };
 
-const fetchMetadata = async () => {
+const fetchMetadata = async (catfile) => {
   try {
-    const { data } = await axios.get("http://localhost:5000/api/metadata");
+    const { data } = await axios.get(`${API_ROOT}/${catfile}/metadata`);
     return data.data ? data.data : data;
   } catch (error) {
     console.error("Failed to fetch metadata:", error);
@@ -26,10 +27,10 @@ const fetchMetadata = async () => {
   }
 };
 
-const fetchCategorySelection = async () => {
+const fetchCategorySelection = async (catfile) => {
   try {
     const { data } = await axios.get(
-      "http://localhost:5000/api/categorySelection",
+      `${API_ROOT}/${catfile}/categorySelection`,
     );
     return data.data ? data.data : data;
   } catch (error) {
@@ -39,6 +40,8 @@ const fetchCategorySelection = async () => {
 };
 
 const IconGrid = () => {
+  let { catfile } = useParams();
+  if (!catfile) catfile = "default";
   const [presets, setPresets] = useState({});
   const [categorySelection, setCategorySelection] = useState(new Map());
   const [metadata, setMetadata] = useState({});
@@ -46,14 +49,14 @@ const IconGrid = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const data = await fetchPresets();
+      const data = await fetchPresets(catfile);
       setPresets(data);
     };
     fetchData();
 
     // Listen for updates from the server
     socket.on("presets:update", async () => {
-      const data = await fetchPresets();
+      const data = await fetchPresets(catfile);
       setPresets(data);
     });
 
@@ -63,7 +66,7 @@ const IconGrid = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const data = await fetchCategorySelection();
+      const data = await fetchCategorySelection(catfile);
       const jointSelection = [...data.observation, ...data.track];
       setCategorySelection(
         new Map(jointSelection.map((val, idx) => [val, idx])),
@@ -74,13 +77,13 @@ const IconGrid = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const data = await fetchMetadata();
+      const data = await fetchMetadata(catfile);
       setMetadata(data);
     };
     fetchData();
   }, []);
   const handlePresetClick = (key) => {
-    navigate(`/preset/${key}`);
+    navigate(`/catfile/${catfile}/preset/${key}`);
   };
 
   return (

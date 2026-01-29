@@ -10,8 +10,12 @@ function App() {
       <Heading />
       <Router>
         <Routes>
+          <Route path="/catfile/:catfile" element={<IconGrid />} />
           <Route path="/" element={<IconGrid />} />
-          <Route path="/preset/:presetId" element={<PresetDetail />} />
+          <Route
+            path="/catfile/:catfile/preset/:presetId"
+            element={<PresetDetail />}
+          />
         </Routes>
       </Router>
     </div>
