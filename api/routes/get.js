@@ -1,16 +1,17 @@
 const loadCatfile = require("../lib/loadCatfile.js");
 const log = require("../lib/log");
 const envPort = process.env.PORT || 5000;
+
 /**
   @param {Express} app
 */
 function get(app) {
   app.get(
-    ["/api/catfile/:catfile/presets/", "/api/presets"],
+    ["/api/presets", "/api/catfile/:catfile/presets/"],
     async (req, res) => {
       try {
         const { hostname, protocol } = req;
-        const catfile = await loadCatfile(req.params.catfile || "default");
+        const catfile = await loadCatfile(req.params.catfile);
         log("Getting presets");
         for (let [key, category] of catfile.categories) {
           category.iconPath = normalizeIconPath(
@@ -40,7 +41,7 @@ function get(app) {
         const presetName = req.params.presetName;
         const protocol = req.protocol;
         const hostname = req.hostname;
-        const catfile = await loadCatfile(req.params.catfile || "default");
+        const catfile = await loadCatfile(req.params.catfile);
         const category = catfile.categories.get(presetName);
         category.iconPath = normalizeIconPath(
           category.icon,
@@ -63,7 +64,7 @@ function get(app) {
   app.get(["/api/fields", "/api/catfile/:catfile/fields"], async (req, res) => {
     try {
       log("Getting fields");
-      const catfile = await loadCatfile(req.params.catfile || "default");
+      const catfile = await loadCatfile(req.params.catfile);
       const data = catfile.fields;
       log("Got fields", data.size);
       res.json(Object.fromEntries(data));
@@ -82,7 +83,7 @@ function get(app) {
       const iconName = req.params.iconName;
 
       try {
-        const catfile = await loadCatfile(req.params.catfile || "default");
+        const catfile = await loadCatfile(req.params.catfile);
         let data = await catfile.reader.getIcon(iconName);
 
         if (!data) {
@@ -105,7 +106,7 @@ function get(app) {
     async (req, res) => {
       try {
         log("Getting metadata");
-        const catfile = await loadCatfile(req.params.catfile || "default");
+        const catfile = await loadCatfile(req.params.catfile);
 
         const data = catfile.metadata;
         log("Got metadata", data);
@@ -123,7 +124,7 @@ function get(app) {
   app.get(
     ["/api/categorySelectoin", "/api/catfile/:catfile/categorySelection"],
     async (req, res) => {
-      const catfile = await loadCatfile(req.params.catfile || "default");
+      const catfile = await loadCatfile(req.params.catfile);
 
       res.json(catfile.categorySelection);
     },
