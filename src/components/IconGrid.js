@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import "./IconGrid.css";
 import axios from "axios";
 import io from "socket.io-client";
-import packageJson from "../../package.json";
 
 const socket = io("http://localhost:5000");
 
@@ -17,8 +16,32 @@ const fetchPresets = async () => {
   }
 };
 
+const fetchMetadata = async () => {
+  try {
+    const { data } = await axios.get("http://localhost:5000/api/metadata");
+    return data.data ? data.data : data;
+  } catch (error) {
+    console.error("Failed to fetch metadata:", error);
+    return null;
+  }
+};
+
+const fetchCategorySelection = async () => {
+  try {
+    const { data } = await axios.get(
+      "http://localhost:5000/api/categorySelection",
+    );
+    return data.data ? data.data : data;
+  } catch (error) {
+    console.error("Failed to fetch categorySelection:", error);
+    return null;
+  }
+};
+
 const IconGrid = () => {
-  const [presets, setPresets] = useState([]);
+  const [presets, setPresets] = useState({});
+  const [categorySelection, setCategorySelection] = useState(new Map());
+  const [metadata, setMetadata] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -38,16 +61,36 @@ const IconGrid = () => {
     return () => socket.off("presets:update");
   }, []);
 
-  const handlePresetClick = (preset) => {
-    navigate(`/preset/${preset.name}`);
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await fetchCategorySelection();
+      const jointSelection = [...data.observation, ...data.track];
+      setCategorySelection(
+        new Map(jointSelection.map((val, idx) => [val, idx])),
+      );
+    };
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await fetchMetadata();
+      setMetadata(data);
+    };
+    fetchData();
+  }, []);
+  const handlePresetClick = (key) => {
+    navigate(`/preset/${key}`);
   };
 
   return (
     <div className="phone-outer-frame">
       <div className="phone-frame">
         <div className="app-header">
-          <div className="app-title">Mapeo Presets</div>
-          <div className="app-version">{packageJson.version}</div>
+          <div className="app-title">{metadata && metadata.name}</div>
+          <span className="app-title-date">
+            {metadata && new Date(metadata.buildDateValue).toLocaleDateString()}
+          </span>
         </div>
 
         <div className="icon-grid">
@@ -59,27 +102,35 @@ const IconGrid = () => {
           )}
 
           {presets &&
-            presets.map((preset) => (
-              <div
-                key={preset.name}
-                className="icon-container"
-                onClick={() => handlePresetClick(preset)}
-              >
+            Object.entries(presets)
+              .sort((a, b) => {
+                const [key1] = a;
+                const [key2] = b;
+                return (
+                  categorySelection.get(key1) - categorySelection.get(key2)
+                );
+              })
+              .map(([key, preset]) => (
                 <div
-                  className="icon"
-                  style={{
-                    borderColor: preset.color,
-                  }}
+                  key={key}
+                  className="icon-container"
+                  onClick={() => handlePresetClick(key)}
                 >
-                  <img
-                    src={preset.iconPath}
-                    alt={preset.name}
-                    className="icon-image"
-                  />
+                  <div
+                    className="icon"
+                    style={{
+                      borderColor: preset.color,
+                    }}
+                  >
+                    <img
+                      src={preset.iconPath}
+                      alt={preset.name}
+                      className="icon-image"
+                    />
+                  </div>
+                  <div className="icon-name">{preset.name}</div>
                 </div>
-                <div className="icon-name">{preset.name}</div>
-              </div>
-            ))}
+              ))}
 
           {!presets && (
             <div className="error-message">

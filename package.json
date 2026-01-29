@@ -20,6 +20,7 @@
     "@testing-library/user-event": "^14.6.1",
     "axios": "^1.9.0",
     "chokidar": "^4.0.3",
+    "comapeocat": "^1.1.0",
     "express": "^5.1.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
@@ -39,7 +40,7 @@
   },
   "scripts": {
     "start:ui": "react-scripts start",
-    "start:api": "node bin.js $1",
+    "start:api": "nodemon bin.js $1",
     "dev": "nodemon bin.js ./fixtures/comapeo & npm run start:ui",
     "dev:file": "nodemon bin.js $1 & npm run start:ui",
     "build": "react-scripts build",

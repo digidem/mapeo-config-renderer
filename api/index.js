@@ -5,17 +5,6 @@ const events = require("events");
 const chokidar = require("chokidar");
 const path = require("path");
 const os = require("os");
-// Import all utility functions
-const {
-  getIcon,
-  getPresets,
-  getFields,
-  getMessages,
-  getDefaults,
-  getMetadata,
-  getStylesheet,
-  getConfig,
-} = require("./lib");
 
 const DEBUG = process.env.DEBUG === "true";
 
@@ -33,23 +22,26 @@ debugLog("Debug mode is on");
 log(`Hostname: ${hostname}`);
 log(`Environment Port: ${envPort}`);
 
-function runApp(mapeoConfigFolder, appPort, headless) {
+async function runApp(comapeocatFile, appPort, headless) {
   const app = express();
   const server = http.createServer(app);
+
+  const { Reader } = await import("comapeocat");
+  const reader = new Reader(comapeocatFile);
+  const categories = await reader.categories();
+  const categorySelection = await reader.categorySelection();
+  const fields = await reader.fields();
+  const metadata = await reader.metadata();
+
+  // for await (const { lang, translations } of reader.translations()) {
+  //   console.log(lang, translations);
+  // }
 
   log(`appPort: ${appPort || "not set"}`);
   debugLog(`Starting app with port: ${appPort}`);
   const port = appPort || envPort;
-  const presetsDir = mapeoConfigFolder
-    ? path.join(mapeoConfigFolder, "presets")
-    : process.env.PRESETS_FOLDER || path.join(__dirname, "presets");
 
-  const fieldsDir = path.join(mapeoConfigFolder, "fields");
-  log(`Config directory: ${mapeoConfigFolder}`);
-  log(`Presets directory: ${presetsDir}`);
-  log(`Fields directory: ${fieldsDir}`);
-  debugLog(`Presets directory resolved to: ${presetsDir}`);
-  debugLog(`Fields directory resolved to: ${fieldsDir}`);
+  log(`file: ${comapeocatFile}`);
 
   !headless && app.use(express.static(path.join(__dirname, "..", "build")));
 
@@ -73,7 +65,7 @@ function runApp(mapeoConfigFolder, appPort, headless) {
 
   const updateEmitter = new events.EventEmitter();
   const msgId = "presets:update";
-  const watcher = chokidar.watch(mapeoConfigFolder, {
+  const watcher = chokidar.watch(comapeocatFile, {
     ignored: /(^|[\/\\])\../, // ignore dotfiles
     persistent: true,
   });
@@ -111,40 +103,12 @@ function runApp(mapeoConfigFolder, appPort, headless) {
 
   app.get("/icons/:iconName", async (req, res) => {
     const iconName = req.params.iconName;
-    const iconsDir = path.join(mapeoConfigFolder, "icons");
-    const iconPath = path.join(iconsDir, iconName);
 
     try {
       // First try the exact path as requested
-      let data = await getIcon(iconPath);
+      let data = await reader.getIcon(iconName);
 
-      // If the icon wasn't found and has -100px suffix, try without it
-      if (data.error && iconName.endsWith("-100px.svg")) {
-        const baseName = iconName.replace("-100px.svg", ".svg");
-        const altPath = path.join(iconsDir, baseName);
-        const altData = await getIcon(altPath);
-
-        if (!altData.error) {
-          data = altData;
-        }
-      }
-
-      // If the icon wasn't found and doesn't have -100px suffix, try with it
-      if (
-        data.error &&
-        iconName.endsWith(".svg") &&
-        !iconName.includes("-100px")
-      ) {
-        const baseName = iconName.replace(".svg", "-100px.svg");
-        const altPath = path.join(iconsDir, baseName);
-        const altData = await getIcon(altPath);
-
-        if (!altData.error) {
-          data = altData;
-        }
-      }
-
-      if (data.error) {
+      if (!data) {
         res.status(404).json({ error: "Icon not found." });
         debugLog(`Failed to serve icon: ${iconName}`);
       } else {
@@ -157,15 +121,23 @@ function runApp(mapeoConfigFolder, appPort, headless) {
       debugLog(`Failed to serve icon: ${iconName}`, err);
     }
   });
+
   app.get("/api/presets", async (req, res) => {
     try {
       const hostname = req.hostname;
       const protocol = req.protocol;
       log("Getting presets");
-      const data = await getPresets(presetsDir, protocol, hostname, port);
-      log("Got presets", data.length);
-      res.json(data);
-      debugLog(`Served presets: ${data.length} items`);
+      for (let [key, category] of categories) {
+        category.iconPath = normalizeIconPath(
+          category.icon,
+          protocol,
+          hostname,
+          envPort,
+        );
+        categories.set(key, category);
+      }
+      res.json(Object.fromEntries(categories));
+      debugLog(`Served presets: ${categories.size} items`);
     } catch (error) {
       res
         .status(500)
@@ -173,13 +145,40 @@ function runApp(mapeoConfigFolder, appPort, headless) {
       debugLog("Error serving presets", error);
     }
   });
+
+  app.get("/api/preset/:presetName", async (req, res) => {
+    try {
+      const presetName = req.params.presetName;
+      const protocol = req.protocol;
+      const hostname = req.hostname;
+      const category = categories.get(presetName);
+      category.iconPath = normalizeIconPath(
+        category.icon,
+        protocol,
+        hostname,
+        envPort,
+      );
+      res.json(category);
+    } catch (error) {
+      res.status(500).json({
+        error: "Failed to get preset " + presetName,
+        message: error.message,
+      });
+      debugLog("Error serving fields", error);
+    }
+  });
+
+  app.get("/api/categorySelection", async (req, res) => {
+    res.json(categorySelection);
+  });
+
   app.get("/api/fields", async (req, res) => {
     try {
       log("Getting fields");
-      const data = await getFields(fieldsDir);
-      log("Got fields", data.length);
-      res.json(data);
-      debugLog(`Served fields: ${data.length} items`);
+      const data = fields;
+      log("Got fields", data.size);
+      res.json(Object.fromEntries(data));
+      debugLog(`Served fields: ${data.size} items`);
     } catch (error) {
       res
         .status(500)
@@ -187,50 +186,35 @@ function runApp(mapeoConfigFolder, appPort, headless) {
       debugLog("Error serving fields", error);
     }
   });
+
   app.get("/path", (req, res) => {
     res.json({
-      data: mapeoConfigFolder,
+      data: comapeocatFile,
     });
-    debugLog(`Served mapeoConfigFolder path: ${mapeoConfigFolder}`);
+    debugLog(`Served mapeoConfigFolder path: ${comapeocatFile}`);
   });
-
-  // New endpoints for CoMapeo format
 
   app.get("/api/messages", async (req, res) => {
-    try {
-      log("Getting messages");
-      const messagesDir = path.join(mapeoConfigFolder, "messages");
-      const data = await getMessages(messagesDir);
-      log("Got messages", Object.keys(data).length);
-      res.json(data);
-      debugLog(`Served messages: ${Object.keys(data).length} languages`);
-    } catch (error) {
-      res
-        .status(500)
-        .json({ error: "Failed to get messages", message: error.message });
-      debugLog("Error serving messages", error);
-    }
-  });
-
-  app.get("/api/defaults", async (req, res) => {
-    try {
-      log("Getting defaults");
-      const data = await getDefaults(mapeoConfigFolder);
-      log("Got defaults", data);
-      res.json(data);
-      debugLog(`Served defaults`);
-    } catch (error) {
-      res
-        .status(500)
-        .json({ error: "Failed to get defaults", message: error.message });
-      debugLog("Error serving defaults", error);
-    }
+    // try {
+    //   log("Getting messages");
+    //   const messagesDir = path.join(comapeocatFile, "messages");
+    //   const data = await getMessages(messagesDir);
+    //   log("Got messages", Object.keys(data).length);
+    //   res.json(data);
+    //   debugLog(`Served messages: ${Object.keys(data).length} languages`);
+    // } catch (error) {
+    //   res
+    //     .status(500)
+    //     .json({ error: "Failed to get messages", message: error.message });
+    //   debugLog("Error serving messages", error);
+    // }
   });
 
   app.get("/api/metadata", async (req, res) => {
     try {
       log("Getting metadata");
-      const data = await getMetadata(mapeoConfigFolder);
+      const data = metadata;
+      console.log(metadata);
       log("Got metadata", data);
       res.json(data);
       debugLog(`Served metadata`);
@@ -242,52 +226,20 @@ function runApp(mapeoConfigFolder, appPort, headless) {
     }
   });
 
-  app.get("/api/stylesheet", async (req, res) => {
-    try {
-      log("Getting stylesheet");
-      const data = await getStylesheet(mapeoConfigFolder);
-      log("Got stylesheet", data.length);
-      res.header("Content-Type", "text/css");
-      res.send(data);
-      debugLog(`Served stylesheet: ${data.length} bytes`);
-    } catch (error) {
-      res
-        .status(500)
-        .json({ error: "Failed to get stylesheet", message: error.message });
-      debugLog("Error serving stylesheet", error);
-    }
-  });
-
-  app.get("/api/config", async (req, res) => {
-    try {
-      log("Getting complete configuration");
-      const hostname = req.hostname;
-      const protocol = req.protocol;
-      const data = await getConfig(mapeoConfigFolder, {
-        protocol,
-        hostname,
-        port,
-      });
-      log("Got configuration", {
-        presets: data.presets.length,
-        fields: data.fields.length,
-        messages: Object.keys(data.messages).length,
-        format: data._format,
-      });
-      res.json(data);
-      debugLog(`Served complete configuration`);
-    } catch (error) {
-      res
-        .status(500)
-        .json({ error: "Failed to get configuration", message: error.message });
-      debugLog("Error serving configuration", error);
-    }
-  });
-
   server.listen(port, () => {
     console.log(`Server running at http://${hostname}:${port}`);
     debugLog(`Server started on port: ${port}`);
   });
+}
+
+function normalizeIconPath(iconName, protocol, hostname, port) {
+  let baseUrl = "";
+  if (protocol && hostname && port) {
+    baseUrl = `${protocol}://${hostname}:${port}`;
+  } else if (protocol) {
+    baseUrl = protocol;
+  }
+  return `${baseUrl}/icons/${iconName}`;
 }
 
 module.exports = runApp;

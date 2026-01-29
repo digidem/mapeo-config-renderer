@@ -5,9 +5,10 @@ import "./PresetDetail.css";
 
 const fetchPreset = async (presetId) => {
   try {
-    const { data } = await axios.get("http://localhost:5000/api/presets");
-    const presets = data.data ? data.data : data;
-    return presets.find((preset) => preset.name === presetId);
+    const { data } = await axios.get(
+      "http://localhost:5000/api/preset/" + presetId,
+    );
+    return data;
   } catch (error) {
     console.error("Failed to fetch preset:", error);
     return null;
@@ -36,13 +37,12 @@ const PresetDetail = () => {
       setLoading(true);
       const presetData = await fetchPreset(presetId);
       const fieldsData = await fetchFields();
-
       setPreset(presetData);
 
       // Filter fields to only include those referenced by the preset
       if (presetData && presetData.fields && fieldsData) {
-        const presetFields = fieldsData.filter((field) =>
-          presetData.fields.includes(field.tagKey || field.key),
+        const presetFields = presetData.fields.map(
+          (field) => fieldsData[field],
         );
         setFields(presetFields);
       }
@@ -59,6 +59,10 @@ const PresetDetail = () => {
         return (
           <div className="field-container">
             <div className="field-label">{field.label}</div>
+            {field.helperText && (
+              <div className="field-helper">{field.helperText}</div>
+            )}
+
             <input
               type="text"
               className="field-input"
@@ -66,9 +70,6 @@ const PresetDetail = () => {
                 field.placeholder || `Enter ${field.label.toLowerCase()}`
               }
             />
-            {field.helperText && (
-              <div className="field-helper">{field.helperText}</div>
-            )}
           </div>
         );
 
@@ -76,6 +77,10 @@ const PresetDetail = () => {
         return (
           <div className="field-container">
             <div className="field-label">{field.label}</div>
+
+            {field.helperText && (
+              <div className="field-helper">{field.helperText}</div>
+            )}
             <input
               type="number"
               className="field-input"
@@ -83,9 +88,6 @@ const PresetDetail = () => {
                 field.placeholder || `Enter ${field.label.toLowerCase()}`
               }
             />
-            {field.helperText && (
-              <div className="field-helper">{field.helperText}</div>
-            )}
           </div>
         );
 
@@ -93,6 +95,10 @@ const PresetDetail = () => {
         return (
           <div className="field-container">
             <div className="field-label">{field.label}</div>
+            {field.helperText && (
+              <div className="field-helper">{field.helperText}</div>
+            )}
+
             <div className="select-options">
               {field.options &&
                 field.options.map((option) => (
@@ -102,9 +108,6 @@ const PresetDetail = () => {
                   </div>
                 ))}
             </div>
-            {field.helperText && (
-              <div className="field-helper">{field.helperText}</div>
-            )}
           </div>
         );
 
@@ -112,6 +115,9 @@ const PresetDetail = () => {
         return (
           <div className="field-container">
             <div className="field-label">{field.label}</div>
+            {field.helperText && (
+              <div className="field-helper">{field.helperText}</div>
+            )}
             <div className="select-options">
               {field.options &&
                 field.options.map((option) => (
@@ -121,9 +127,6 @@ const PresetDetail = () => {
                   </div>
                 ))}
             </div>
-            {field.helperText && (
-              <div className="field-helper">{field.helperText}</div>
-            )}
           </div>
         );
 
@@ -147,13 +150,21 @@ const PresetDetail = () => {
             <button className="back-button" onClick={() => navigate("/")}>
               ←
             </button>
-            <div className="preset-title">
-              {loading
-                ? "Loading..."
-                : preset
-                  ? preset.name
-                  : "Preset not found"}
-            </div>
+            {loading ? (
+              "Loading..."
+            ) : preset ? (
+              <div className="preset-title-container">
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  <p className="preset-title">{preset.name}</p>
+                  <span className="preset-appliest-to">
+                    ({preset.appliesTo.join(" / ")})
+                  </span>
+                </div>
+                <img className="preset-title-icon" src={preset.iconPath}></img>
+              </div>
+            ) : (
+              "Preset not found"
+            )}
             <div className="done-button" onClick={() => navigate("/")}>
               Done
             </div>
