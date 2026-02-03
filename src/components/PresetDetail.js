@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./PresetDetail.css";
 
-const API_ROOT = "http://localhost:5000/api/catfile";
+const API_ROOT = "/api/catfile";
 
 const fetchPreset = async (catfile, presetId) => {
   try {

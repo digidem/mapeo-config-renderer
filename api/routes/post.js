@@ -31,8 +31,8 @@ function post(app) {
     const id = await hashFile(req.file.path);
     const newPath = `/tmp/${id}.comapeocat`;
     await fs.rename(req.file.path, newPath);
-    log("new file path", req.file.path);
-    res.redirect(`http://localhost:3000/catfile/${id}`);
+    log("new file path", newPath);
+    res.redirect(`/catfile/${id}`);
   });
 }
 module.exports = post;

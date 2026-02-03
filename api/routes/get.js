@@ -39,8 +39,7 @@ function get(app) {
     async (req, res) => {
       try {
         const presetName = req.params.presetName;
-        const protocol = req.protocol;
-        const hostname = req.hostname;
+        const { hostname, protocol } = req;
         const catfile = await loadCatfile(req.params.catfile);
         const category = catfile.categories.get(presetName);
         category.iconPath = normalizeIconPath(

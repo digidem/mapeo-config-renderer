@@ -3,11 +3,7 @@ export default function Heading() {
     <header>
       <h2>Comapeo categories viewer</h2>
       <div></div>
-      <form
-        action="http://localhost:5000/upload/"
-        method="POST"
-        enctype="multipart/form-data"
-      >
+      <form action="/upload/" method="POST" enctype="multipart/form-data">
         <label for="file">Upload .comapeocat file:</label>
         <input
           type="file"
