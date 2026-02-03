@@ -1,4 +1,4 @@
-.preset-detail {
+.category-detail {
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -6,7 +6,7 @@
   overflow-y: auto;
 }
 
-.preset-header {
+.category-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -28,19 +28,19 @@
   margin: 0;
 }
 
-.preset-title-container {
+.category-title-container {
   display:flex;
   gap:4px;
 }
 
-.preset-title {
+.category-title {
   font-size: 18px;
   font-weight: 600;
   text-align: center;
   margin-bottom:0px;
 }
 
-.preset-appliest-to {
+.category-appliest-to {
   font-size: 12px;
   font-weight: 200;
   flex-grow: 1;
@@ -49,7 +49,7 @@
 
 }
 
-.preset-title-icon {
+.category-title-icon {
   width:60px;
 }
 
@@ -59,7 +59,7 @@
   cursor: pointer;
 }
 
-.preset-fields {
+.category-fields {
   padding: 16px;
   display: flex;
   flex-direction: column;

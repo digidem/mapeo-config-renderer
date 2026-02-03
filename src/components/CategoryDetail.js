@@ -1,31 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import "./PresetDetail.css";
+import "./CategoryDetail.css";
 
 const API_ROOT = "/api/catfile";
 
-const fetchPreset = async (catfile, presetId) => {
+const fetchCategory = async (catfile, categoryId) => {
   try {
-    const url = `${API_ROOT}/${catfile}/presets/${presetId}`;
+    const url = `${API_ROOT}/${catfile}/categories/${categoryId}`;
     const { data } = await axios.get(url);
     return data;
   } catch (error) {
-    console.error("Failed to fetch preset:", error);
+    console.error("Failed to fetch category: " + categoryId, error);
     return null;
   }
 };
 
-const fetchFields = async (catfile) => {
-  try {
-    const url = `${API_ROOT}/${catfile}/fields`;
-    const { data } = await axios.get(url);
-    return data;
-  } catch (error) {
-    console.error("Failed to fetch fields:", error);
-    return [];
-  }
-};
 const fetchField = async (catfile, fieldId) => {
   try {
     const url = `${API_ROOT}/${catfile}/fields/${fieldId}`;
@@ -38,29 +28,29 @@ const fetchField = async (catfile, fieldId) => {
 };
 
 const PresetDetail = () => {
-  const { presetId, catfile } = useParams();
+  const { categoryId, catfile } = useParams();
   const navigate = useNavigate();
-  const [preset, setPreset] = useState(null);
+  const [category, setCategory] = useState(null);
   const [fields, setFields] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const presetData = await fetchPreset(catfile, presetId);
+      const categoryData = await fetchCategory(catfile, categoryId);
       const fieldsData = await Promise.all(
-        presetData.fields.map(async (fieldId) => {
+        categoryData.fields.map(async (fieldId) => {
           return await fetchField(catfile, fieldId);
         }),
       );
-      setPreset(presetData);
+      setCategory(categoryData);
       setFields(fieldsData);
 
       setLoading(false);
     };
 
     fetchData();
-  }, [presetId]);
+  }, [categoryId]);
 
   const renderField = (field) => {
     switch (field.type) {
@@ -154,8 +144,8 @@ const PresetDetail = () => {
   return (
     <div className="phone-outer-frame">
       <div className="phone-frame">
-        <div className="preset-detail">
-          <div className="preset-header">
+        <div className="category-detail">
+          <div className="category-header">
             <button
               className="back-button"
               onClick={() => navigate(`/catfile/${catfile}`)}
@@ -164,15 +154,18 @@ const PresetDetail = () => {
             </button>
             {loading ? (
               "Loading..."
-            ) : preset ? (
-              <div className="preset-title-container">
+            ) : category ? (
+              <div className="category-title-container">
                 <div style={{ display: "flex", flexDirection: "column" }}>
-                  <p className="preset-title">{preset.name}</p>
-                  <span className="preset-appliest-to">
-                    ({preset.appliesTo.join(" / ")})
+                  <p className="category-title">{category.name}</p>
+                  <span className="category-appliest-to">
+                    ({category.appliesTo.join(" / ")})
                   </span>
                 </div>
-                <img className="preset-title-icon" src={preset.iconPath}></img>
+                <img
+                  className="category-title-icon"
+                  src={category.iconPath}
+                ></img>
               </div>
             ) : (
               "Preset not found"
@@ -184,8 +177,8 @@ const PresetDetail = () => {
 
           {loading ? (
             <div className="loading">Loading...</div>
-          ) : preset ? (
-            <div className="preset-fields">
+          ) : category ? (
+            <div className="category-fields">
               {fields.map((field) => (
                 <div key={field.tagKey || field.key} className="field">
                   {renderField(field)}

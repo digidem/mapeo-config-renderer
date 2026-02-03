@@ -8,13 +8,13 @@ const translate = require("../lib/translate.js");
 */
 function get(app) {
   app.get(
-    ["/api/presets", "/api/catfile/:catfile/presets/"],
+    ["/api/categories", "/api/catfile/:catfile/categories/"],
     async (req, res) => {
       try {
         const { hostname, protocol } = req;
         const catfile = await loadCatfile(req.params.catfile);
 
-        log("Getting presets");
+        log("Getting categories");
         for (let [catId, category] of catfile.categories) {
           category.iconPath = normalizeIconPath(
             category.icon,
@@ -27,24 +27,27 @@ function get(app) {
           catfile.categories.set(catId, category);
         }
         res.json(Object.fromEntries(catfile.categories));
-        log(`Served presets: ${catfile.categories.size} items`);
+        log(`Served categories: ${catfile.categories.size} items`);
       } catch (error) {
         res
           .status(500)
-          .json({ error: error || "Unknown error on getting presets" });
-        log("Error serving presets", error);
+          .json({ error: error || "Unknown error on getting categories" });
+        log("Error serving categories", error);
       }
     },
   );
 
   app.get(
-    ["/api/presets/:presetName", "/api/catfile/:catfile/presets/:presetName"],
+    [
+      "/api/categories/:categoryId",
+      "/api/catfile/:catfile/categories/:categoryId",
+    ],
     async (req, res) => {
+      const { categoryId, catfile } = req.params;
+      const { hostname, protocol } = req;
       try {
-        const presetName = req.params.presetName;
-        const { hostname, protocol } = req;
-        const catfile = await loadCatfile(req.params.catfile);
-        const category = catfile.categories.get(presetName);
+        const file = await loadCatfile(catfile);
+        const category = file.categories.get(categoryId);
         category.iconPath = normalizeIconPath(
           category.icon,
           req.params.catfile,
@@ -52,14 +55,14 @@ function get(app) {
           hostname,
           envPort,
         );
-        translate("category", category, presetName, catfile.translations);
+        translate("category", category, categoryId, file.translations);
         res.json(category);
       } catch (error) {
         res.status(500).json({
-          error: "Failed to get preset " + req.params.presetName,
+          error: "Failed to get category: " + categoryId,
           message: error.message,
         });
-        log("Error serving fields", error);
+        log("Error serving category: " + categoryId, error);
       }
     },
   );

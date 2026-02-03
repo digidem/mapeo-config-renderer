@@ -7,12 +7,12 @@ import io from "socket.io-client";
 const API_ROOT = "/api/catfile";
 const socket = io("http://localhost:5000");
 
-const fetchPresets = async (catfile) => {
+const fetchCategories = async (catfile) => {
   try {
-    const { data } = await axios.get(`${API_ROOT}/${catfile}/presets`);
+    const { data } = await axios.get(`${API_ROOT}/${catfile}/categories`);
     return data.data ? data.data : data;
   } catch (error) {
-    console.error("Failed to fetch presets:", error);
+    console.error("Failed to fetch categories:", error);
     return null;
   }
 };
@@ -42,22 +42,22 @@ const fetchCategorySelection = async (catfile) => {
 const IconGrid = () => {
   let { catfile } = useParams();
   if (!catfile) catfile = "default";
-  const [presets, setPresets] = useState({});
+  const [categories, setCategories] = useState({});
   const [categorySelection, setCategorySelection] = useState(new Map());
   const [metadata, setMetadata] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
-      const data = await fetchPresets(catfile);
-      setPresets(data);
+      const data = await fetchCategories(catfile);
+      setCategories(data);
     };
     fetchData();
 
     // Listen for updates from the server
     socket.on("presets:update", async () => {
-      const data = await fetchPresets(catfile);
-      setPresets(data);
+      const data = await fetchCategories(catfile);
+      setCategories(data);
     });
 
     // Clean up the effect
@@ -83,7 +83,7 @@ const IconGrid = () => {
     fetchData();
   }, []);
   const handlePresetClick = (key) => {
-    navigate(`/catfile/${catfile}/preset/${key}`);
+    navigate(`/catfile/${catfile}/categories/${key}`);
   };
 
   return (
@@ -97,15 +97,15 @@ const IconGrid = () => {
         </div>
 
         <div className="icon-grid">
-          {presets && presets.length === 0 && (
+          {categories && categories.length === 0 && (
             <div className="loading-container">
               <div className="loading-spinner"></div>
-              <div className="loading-text">Loading presets...</div>
+              <div className="loading-text">Loading categories...</div>
             </div>
           )}
 
-          {presets &&
-            Object.entries(presets)
+          {categories &&
+            Object.entries(categories)
               .sort((a, b) => {
                 const [key1] = a;
                 const [key2] = b;
@@ -113,7 +113,7 @@ const IconGrid = () => {
                   categorySelection.get(key1) - categorySelection.get(key2)
                 );
               })
-              .map(([key, preset]) => (
+              .map(([key, category]) => (
                 <div
                   key={key}
                   className="icon-container"
@@ -122,20 +122,20 @@ const IconGrid = () => {
                   <div
                     className="icon"
                     style={{
-                      borderColor: preset.color,
+                      borderColor: category.color,
                     }}
                   >
                     <img
-                      src={preset.iconPath}
-                      alt={preset.name}
+                      src={category.iconPath}
+                      alt={category.name}
                       className="icon-image"
                     />
                   </div>
-                  <div className="icon-name">{preset.name}</div>
+                  <div className="icon-name">{category.name}</div>
                 </div>
               ))}
 
-          {!presets && (
+          {!categories && (
             <div className="error-message">
               Mapeo configuration folder not detected, make sure you are inside
               or passing the right folder
