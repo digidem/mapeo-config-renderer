@@ -1,6 +1,7 @@
 const loadCatfile = require("../lib/loadCatfile.js");
 const log = require("../lib/log");
 const envPort = process.env.PORT || 5000;
+const translate = require("../lib/translate.js");
 
 /**
   @param {Express} app
@@ -12,8 +13,9 @@ function get(app) {
       try {
         const { hostname, protocol } = req;
         const catfile = await loadCatfile(req.params.catfile);
+
         log("Getting presets");
-        for (let [key, category] of catfile.categories) {
+        for (let [catId, category] of catfile.categories) {
           category.iconPath = normalizeIconPath(
             category.icon,
             req.params.catfile,
@@ -21,7 +23,8 @@ function get(app) {
             hostname,
             envPort,
           );
-          catfile.categories.set(key, category);
+          translate("category", category, catId, catfile.translations);
+          catfile.categories.set(catId, category);
         }
         res.json(Object.fromEntries(catfile.categories));
         log(`Served presets: ${catfile.categories.size} items`);
@@ -35,7 +38,7 @@ function get(app) {
   );
 
   app.get(
-    ["/api/preset/:presetName", "/api/catfile/:catfile/preset/:presetName"],
+    ["/api/presets/:presetName", "/api/catfile/:catfile/presets/:presetName"],
     async (req, res) => {
       try {
         const presetName = req.params.presetName;
@@ -49,6 +52,7 @@ function get(app) {
           hostname,
           envPort,
         );
+        translate("category", category, presetName, catfile.translations);
         res.json(category);
       } catch (error) {
         res.status(500).json({
@@ -65,6 +69,9 @@ function get(app) {
       log("Getting fields");
       const catfile = await loadCatfile(req.params.catfile);
       const data = catfile.fields;
+      for (let [fieldId, field] of data) {
+        translate("field", field, fieldId, catfile.translations);
+      }
       log("Got fields", data.size);
       res.json(Object.fromEntries(data));
       log(`Served fields: ${data.size} items`);
@@ -75,6 +82,29 @@ function get(app) {
       log("Error serving fields", error);
     }
   });
+
+  app.get(
+    ["/api/fields/:fieldId", "/api/catfile/:catfile/fields/:fieldId"],
+    async (req, res) => {
+      const fieldId = req.params.fieldId;
+      const catfile = await loadCatfile(req.params.catfile);
+      const field = catfile.fields.get(fieldId);
+      translate("field", field, fieldId, catfile.translations);
+
+      log("Got field", fieldId, catfile.fields.get(fieldId));
+      res.json(field);
+      log(`Served field: ${fieldId}`);
+
+      try {
+      } catch (error) {
+        res.status(500).json({
+          error: "Failed to get field:" + fieldId,
+          message: error.message,
+        });
+        log("Error serving fields", error);
+      }
+    },
+  );
 
   app.get(
     ["/icons/:iconName", "/icons/catfile/:catfile/:iconName"],
@@ -129,19 +159,16 @@ function get(app) {
     },
   );
   app.get("/api/messages", async (req, res) => {
-    // try {
-    //   log("Getting messages");
-    //   const messagesDir = path.join(comapeocatFile, "messages");
-    //   const data = await getMessages(messagesDir);
-    //   log("Got messages", Object.keys(data).length);
-    //   res.json(data);
-    //   debugLog(`Served messages: ${Object.keys(data).length} languages`);
-    // } catch (error) {
-    //   res
-    //     .status(500)
-    //     .json({ error: "Failed to get messages", message: error.message });
-    //   debugLog("Error serving messages", error);
-    // }
+    try {
+      log("Getting messages");
+      const catfile = await loadCatfile(req.params.catfile);
+      res.json(catfile.translations);
+    } catch (error) {
+      res
+        .status(500)
+        .json({ error: "Failed to get messages", message: error.message });
+      debugLog("Error serving messages", error);
+    }
   });
 }
 

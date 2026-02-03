@@ -7,7 +7,7 @@ const API_ROOT = "/api/catfile";
 
 const fetchPreset = async (catfile, presetId) => {
   try {
-    const url = `${API_ROOT}/${catfile}/preset/${presetId}`;
+    const url = `${API_ROOT}/${catfile}/presets/${presetId}`;
     const { data } = await axios.get(url);
     return data;
   } catch (error) {
@@ -26,6 +26,16 @@ const fetchFields = async (catfile) => {
     return [];
   }
 };
+const fetchField = async (catfile, fieldId) => {
+  try {
+    const url = `${API_ROOT}/${catfile}/fields/${fieldId}`;
+    const { data } = await axios.get(url);
+    return data;
+  } catch (error) {
+    console.error(`Failed to fetch field ${fieldId}:`, error);
+    return [];
+  }
+};
 
 const PresetDetail = () => {
   const { presetId, catfile } = useParams();
@@ -38,16 +48,13 @@ const PresetDetail = () => {
     const fetchData = async () => {
       setLoading(true);
       const presetData = await fetchPreset(catfile, presetId);
-      const fieldsData = await fetchFields(catfile);
+      const fieldsData = await Promise.all(
+        presetData.fields.map(async (fieldId) => {
+          return await fetchField(catfile, fieldId);
+        }),
+      );
       setPreset(presetData);
-
-      // Filter fields to only include those referenced by the preset
-      if (presetData && presetData.fields && fieldsData) {
-        const presetFields = presetData.fields.map(
-          (field) => fieldsData[field],
-        );
-        setFields(presetFields);
-      }
+      setFields(fieldsData);
 
       setLoading(false);
     };

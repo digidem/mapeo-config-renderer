@@ -22,6 +22,7 @@
     "axios": "^1.9.0",
     "chokidar": "^4.0.3",
     "comapeocat": "^1.1.0",
+    "dot-prop-extra": "^10.2.0",
     "express": "^5.1.0",
     "multer": "^2.0.2",
     "react": "^19.1.0",

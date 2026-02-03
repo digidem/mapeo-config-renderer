@@ -7,7 +7,18 @@ async function loadCatfile(path = "default") {
   const categorySelection = await reader.categorySelection();
   const fields = await reader.fields();
   const metadata = await reader.metadata();
-  return { reader, categories, categorySelection, fields, metadata };
+  const translations = {};
+  for await (const { lang, translations: tr } of reader.translations()) {
+    translations[lang] = tr;
+  }
+  return {
+    reader,
+    categories,
+    categorySelection,
+    fields,
+    metadata,
+    translations,
+  };
 }
 
 module.exports = loadCatfile;
