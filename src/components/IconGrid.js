@@ -3,13 +3,16 @@ import { useParams, useNavigate } from "react-router-dom";
 import "./IconGrid.css";
 import axios from "axios";
 import io from "socket.io-client";
+import { useLanguage } from "../contexts/LanguageContext";
 
 const API_ROOT = "/api/catfile";
 const socket = io("http://localhost:5000");
 
-const fetchCategories = async (catfile) => {
+const fetchCategories = async (catfile, lang) => {
   try {
-    const { data } = await axios.get(`${API_ROOT}/${catfile}/categories`);
+    const { data } = await axios.get(`${API_ROOT}/${catfile}/categories`, {
+      params: { lang },
+    });
     return data.data ? data.data : data;
   } catch (error) {
     console.error("Failed to fetch categories:", error);
@@ -46,23 +49,24 @@ const IconGrid = () => {
   const [categorySelection, setCategorySelection] = useState(new Map());
   const [metadata, setMetadata] = useState({});
   const navigate = useNavigate();
+  const { language } = useLanguage();
 
   useEffect(() => {
     const fetchData = async () => {
-      const data = await fetchCategories(catfile);
+      const data = await fetchCategories(catfile, language);
       setCategories(data);
     };
     fetchData();
 
     // Listen for updates from the server
     socket.on("presets:update", async () => {
-      const data = await fetchCategories(catfile);
+      const data = await fetchCategories(catfile, language);
       setCategories(data);
     });
 
     // Clean up the effect
     return () => socket.off("presets:update");
-  }, []);
+  }, [catfile, language]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -73,7 +77,7 @@ const IconGrid = () => {
       );
     };
     fetchData();
-  }, []);
+  }, [catfile]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -81,7 +85,8 @@ const IconGrid = () => {
       setMetadata(data);
     };
     fetchData();
-  }, []);
+  }, [catfile]);
+
   const handlePresetClick = (key) => {
     navigate(`/catfile/${catfile}/categories/${key}`);
   };

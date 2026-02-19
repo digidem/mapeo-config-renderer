@@ -7,14 +7,33 @@ const translate = require("../lib/translate.js");
   @param {Express} app
 */
 function get(app) {
+  // Get available languages
+  app.get(
+    ["/api/languages", "/api/catfile/:catfile/languages"],
+    async (req, res) => {
+      try {
+        const catfile = await loadCatfile(req.params.catfile);
+        const languages = Object.keys(catfile.translations);
+        log("Served languages:", languages);
+        res.json(languages);
+      } catch (error) {
+        res
+          .status(500)
+          .json({ error: "Failed to get languages", message: error.message });
+        log("Error serving languages", error);
+      }
+    },
+  );
+
   app.get(
     ["/api/categories", "/api/catfile/:catfile/categories/"],
     async (req, res) => {
       try {
         const { hostname, protocol } = req;
+        const lang = req.query.lang || "en";
         const catfile = await loadCatfile(req.params.catfile);
 
-        log("Getting categories");
+        log("Getting categories with lang:", lang);
         for (let [catId, category] of catfile.categories) {
           category.iconPath = normalizeIconPath(
             category.icon,
@@ -23,7 +42,7 @@ function get(app) {
             hostname,
             envPort,
           );
-          translate("category", category, catId, catfile.translations);
+          translate("category", category, catId, catfile.translations, lang);
           catfile.categories.set(catId, category);
         }
         res.json(Object.fromEntries(catfile.categories));
@@ -45,6 +64,7 @@ function get(app) {
     async (req, res) => {
       const { categoryId, catfile } = req.params;
       const { hostname, protocol } = req;
+      const lang = req.query.lang || "en";
       try {
         const file = await loadCatfile(catfile);
         const category = file.categories.get(categoryId);
@@ -55,7 +75,7 @@ function get(app) {
           hostname,
           envPort,
         );
-        translate("category", category, categoryId, file.translations);
+        translate("category", category, categoryId, file.translations, lang);
         res.json(category);
       } catch (error) {
         res.status(500).json({
@@ -69,11 +89,12 @@ function get(app) {
 
   app.get(["/api/fields", "/api/catfile/:catfile/fields"], async (req, res) => {
     try {
-      log("Getting fields");
+      const lang = req.query.lang || "en";
+      log("Getting fields with lang:", lang);
       const catfile = await loadCatfile(req.params.catfile);
       const data = catfile.fields;
       for (let [fieldId, field] of data) {
-        translate("field", field, fieldId, catfile.translations);
+        translate("field", field, fieldId, catfile.translations, lang);
       }
       log("Got fields", data.size);
       res.json(Object.fromEntries(data));
@@ -90,11 +111,12 @@ function get(app) {
     ["/api/fields/:fieldId", "/api/catfile/:catfile/fields/:fieldId"],
     async (req, res) => {
       const fieldId = req.params.fieldId;
+      const lang = req.query.lang || "en";
       const catfile = await loadCatfile(req.params.catfile);
       const field = catfile.fields.get(fieldId);
-      translate("field", field, fieldId, catfile.translations);
+      translate("field", field, fieldId, catfile.translations, lang);
 
-      log("Got field", fieldId, catfile.fields.get(fieldId));
+      log("Got field", fieldId, "with lang:", lang);
       res.json(field);
       log(`Served field: ${fieldId}`);
 

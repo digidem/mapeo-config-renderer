@@ -106,7 +106,10 @@ input:focus {
 }
 
 header {
-  margin:20px;
+  margin: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 form {

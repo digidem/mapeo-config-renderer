@@ -2,13 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./CategoryDetail.css";
+import { useLanguage } from "../contexts/LanguageContext";
 
 const API_ROOT = "/api/catfile";
 
-const fetchCategory = async (catfile, categoryId) => {
+const fetchCategory = async (catfile, categoryId, lang) => {
   try {
     const url = `${API_ROOT}/${catfile}/categories/${categoryId}`;
-    const { data } = await axios.get(url);
+    const { data } = await axios.get(url, { params: { lang } });
     return data;
   } catch (error) {
     console.error("Failed to fetch category: " + categoryId, error);
@@ -16,10 +17,10 @@ const fetchCategory = async (catfile, categoryId) => {
   }
 };
 
-const fetchField = async (catfile, fieldId) => {
+const fetchField = async (catfile, fieldId, lang) => {
   try {
     const url = `${API_ROOT}/${catfile}/fields/${fieldId}`;
-    const { data } = await axios.get(url);
+    const { data } = await axios.get(url, { params: { lang } });
     return data;
   } catch (error) {
     console.error(`Failed to fetch field ${fieldId}:`, error);
@@ -33,14 +34,15 @@ const PresetDetail = () => {
   const [category, setCategory] = useState(null);
   const [fields, setFields] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { language } = useLanguage();
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const categoryData = await fetchCategory(catfile, categoryId);
+      const categoryData = await fetchCategory(catfile, categoryId, language);
       const fieldsData = await Promise.all(
         categoryData.fields.map(async (fieldId) => {
-          return await fetchField(catfile, fieldId);
+          return await fetchField(catfile, fieldId, language);
         }),
       );
       setCategory(categoryData);
@@ -50,7 +52,7 @@ const PresetDetail = () => {
     };
 
     fetchData();
-  }, [categoryId]);
+  }, [categoryId, catfile, language]);
 
   const renderField = (field) => {
     switch (field.type) {
