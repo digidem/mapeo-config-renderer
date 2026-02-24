@@ -4,12 +4,14 @@ const fs = require("fs/promises");
 
 const hashFile = require("../lib/hashFile.js");
 
+const UPLOAD_DIR = process.env.UPLOAD_DIR || "/tmp";
+
 /**
   @param {Express} app
   */
 function post(app) {
   const storage = multer.diskStorage({
-    destination: "/tmp",
+    destination: UPLOAD_DIR,
     filename: (req, file, cb) => {
       cb(null, Date.now() + "-" + file.originalname);
     },
@@ -29,7 +31,7 @@ function post(app) {
       return res.status(400).send("No file uploaded");
     }
     const id = await hashFile(req.file.path);
-    const newPath = `/tmp/${id}.comapeocat`;
+    const newPath = `${UPLOAD_DIR}/${id}.comapeocat`;
     await fs.rename(req.file.path, newPath);
     log("new file path", newPath);
     res.redirect(`/#/catfile/${id}`);
