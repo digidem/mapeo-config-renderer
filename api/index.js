@@ -23,7 +23,6 @@ async function runApp(comapeocatFile, appPort, headless = false) {
   const port = appPort || envPort;
   log(`file: ${comapeocatFile}`);
   const buildPath = path.join(__dirname, "..", "build");
-  log(`build path: ${buildPath}`);
 
   !headless && app.use(express.static(buildPath));
 

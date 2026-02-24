@@ -44,6 +44,7 @@
   },
   "scripts": {
     "start": "export DEBUG=1 && node bin.js default.comapeocat",
+    "start:dev": "export DEBUG=1 && nodemon bin.js default.comapeocat",
     "start:ui": "react-scripts start",
     "start:api": "nodemon bin.js $1",
     "dev": "nodemon bin.js ./fixtures/comapeo & npm run start:ui",

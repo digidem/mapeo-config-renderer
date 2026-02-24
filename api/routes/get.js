@@ -1,4 +1,4 @@
-const loadCatfile = require("../lib/loadCatfile.js");
+const loadCatfile = require("../lib/loadCatfile.js")();
 const log = require("../lib/log");
 const envPort = process.env.PORT || 5000;
 const translate = require("../lib/translate.js");
@@ -37,7 +37,7 @@ function get(app) {
         for (let [catId, category] of catfile.categories) {
           category.iconPath = normalizeIconPath(
             category.icon,
-            req.params.catfile,
+            req.params.catfile || "default",
             protocol,
             hostname,
             envPort,
