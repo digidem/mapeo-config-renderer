@@ -44,6 +44,7 @@ const fetchCategorySelection = async (catfile) => {
 
 const IconGrid = () => {
   let { catfile } = useParams();
+  console.log("CATFILE", catfile);
   if (!catfile) catfile = "default";
   const [categories, setCategories] = useState({});
   const [categorySelection, setCategorySelection] = useState(new Map());

@@ -15,15 +15,17 @@ const log = require("./lib/log");
 log(`Hostname: ${hostname}`);
 log(`Environment Port: ${envPort}`);
 
-async function runApp(comapeocatFile, appPort, headless) {
+async function runApp(comapeocatFile, appPort, headless = false) {
   const app = express();
   const server = http.createServer(app);
 
   log(`appPort: ${appPort || "not set"}`);
   const port = appPort || envPort;
   log(`file: ${comapeocatFile}`);
+  const buildPath = path.join(__dirname, "..", "build");
+  log(`build path: ${buildPath}`);
 
-  !headless && app.use(express.static(path.join(__dirname, "..", "build")));
+  !headless && app.use(express.static(buildPath));
 
   app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
@@ -39,7 +41,7 @@ async function runApp(comapeocatFile, appPort, headless) {
   get(app);
   post(app);
 
-  server.listen(port, () => {
+  server.listen(port, "0.0.0.0", () => {
     log(`Server running at http://${hostname}:${port}`);
   });
 }

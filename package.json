@@ -4,6 +4,7 @@
   "description": "A library and command-line tool for rendering Mapeo configuration files",
   "main": "index.js",
   "proxy": "http://localhost:5000",
+  "homepage": ".",
   "exports": {
     ".": "./index.js",
     "./api": "./api/index.js",
@@ -42,6 +43,7 @@
     "prettier": "^3.5.3"
   },
   "scripts": {
+    "start": "export DEBUG=1 && node bin.js default.comapeocat",
     "start:ui": "react-scripts start",
     "start:api": "nodemon bin.js $1",
     "dev": "nodemon bin.js ./fixtures/comapeo & npm run start:ui",

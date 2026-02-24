@@ -32,7 +32,7 @@ function post(app) {
     const newPath = `/tmp/${id}.comapeocat`;
     await fs.rename(req.file.path, newPath);
     log("new file path", newPath);
-    res.redirect(`/catfile/${id}`);
+    res.redirect(`/#/catfile/${id}`);
   });
 }
 module.exports = post;
