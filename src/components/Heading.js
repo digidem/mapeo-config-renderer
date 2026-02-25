@@ -8,21 +8,21 @@ export default function Heading() {
     <header>
       <h2>Comapeo categories viewer</h2>
       <div className="header-controls">
-        <div className="language-selector">
-          <label htmlFor="language">Language:</label>
-          <select
-            id="language"
-            value={language}
-            onChange={(e) => setLanguage(e.target.value)}
-            disabled={loading}
-          >
-            {availableLanguages.map((lang) => (
-              <option key={lang} value={lang}>
-                {lang.toUpperCase()}
-              </option>
-            ))}
-          </select>
-        </div>
+        <fieldset className="language-selector" disabled={loading}>
+          <legend>Language:</legend>
+          {availableLanguages.map((lang) => (
+            <label key={lang} className="language-option">
+              <input
+                type="radio"
+                name="language"
+                value={lang}
+                checked={language === lang}
+                onChange={(e) => setLanguage(e.target.value)}
+              />
+              {lang.toUpperCase()}
+            </label>
+          ))}
+        </fieldset>
         <form action="/upload/" method="POST" encType="multipart/form-data">
           <label htmlFor="file">Upload .comapeocat file:</label>
           <input
