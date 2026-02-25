@@ -6,10 +6,8 @@ const UPLOAD_DIR = process.env.UPLOAD_DIR || "/tmp";
 function createCatFileLoader() {
   let cache = {};
   return async function loadCatFile(path = "default") {
-    if (cache[path] !== undefined) {
-      log(`catfile at ${path} already loaded, returning cached version`);
-      return cache[path];
-    }
+    if (cache[path] !== undefined) return cache[path];
+
     log("loading catfile on path", path);
     const filepath =
       path == "default"
