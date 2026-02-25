@@ -11,6 +11,12 @@
   /* align-items: center; */
 }
 
+@media (max-width: 520px) {
+  .App {
+    flex-direction: column;
+  }
+}
+
 /* Global button styles */
 button {
   cursor: pointer;
@@ -47,6 +53,7 @@ input:focus {
 .phone-outer-frame {
   background: #e0e0e0;
   width: 480px;
+  max-width: 100%;
   border-radius: 36px;
   padding: 12px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
@@ -56,6 +63,23 @@ input:focus {
   left: 0;
   bottom: 0;
   right: 0;
+}
+
+@media (max-width: 520px) {
+  .phone-outer-frame {
+    position: relative;
+    border-radius: 0;
+    padding: 0;
+    flex: 1;
+  }
+  
+  .phone-frame {
+    border-radius: 0;
+  }
+  
+  .bottom-circle {
+    display: none;
+  }
 }
 
 .phone-frame {
@@ -112,14 +136,31 @@ header {
   gap: 16px;
 }
 
+@media (max-width: 520px) {
+  header {
+    margin: 12px;
+  }
+  
+  header h2 {
+    font-size: 1.2rem;
+  }
+}
+
 form {
   display: flex;
   flex-direction: column; /* stack vertically */
   gap: 0.75rem;            /* spacing between fields */
   max-width: 320px;
-  padding:24px;
+  padding: 24px;
   border: 2px solid grey;
   border-radius: 20px;
+}
+
+@media (max-width: 520px) {
+  form {
+    padding: 12px;
+    max-width: 100%;
+  }
 }
 
 label {

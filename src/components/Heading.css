@@ -1,8 +1,15 @@
 .header-controls {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 20px;
   flex-wrap: wrap;
+}
+
+@media (max-width: 520px) {
+  .header-controls {
+    flex-direction: column;
+    gap: 12px;
+  }
 }
 
 .language-selector {
