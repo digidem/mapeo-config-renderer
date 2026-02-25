@@ -2,11 +2,11 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "./IconGrid.css";
 import axios from "axios";
-import io from "socket.io-client";
+// import io from "socket.io-client";
 import { useLanguage } from "../contexts/LanguageContext";
 
 const API_ROOT = "/api/catfile";
-const socket = io("http://localhost:5000");
+// const socket = io("http://localhost:5000");
 
 const fetchCategories = async (catfile, lang) => {
   try {
@@ -59,13 +59,13 @@ const IconGrid = () => {
     fetchData();
 
     // Listen for updates from the server
-    socket.on("presets:update", async () => {
-      const data = await fetchCategories(catfile, language);
-      setCategories(data);
-    });
+    // socket.on("presets:update", async () => {
+    //   const data = await fetchCategories(catfile, language);
+    //   setCategories(data);
+    // });
 
     // Clean up the effect
-    return () => socket.off("presets:update");
+    // return () => socket.off("presets:update");
   }, [catfile, language]);
 
   useEffect(() => {

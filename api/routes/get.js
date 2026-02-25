@@ -1,6 +1,5 @@
 const loadCatfile = require("../lib/loadCatfile.js")();
 const log = require("../lib/log");
-const envPort = process.env.PORT || 5000;
 const translate = require("../lib/translate.js");
 
 /**
@@ -29,7 +28,6 @@ function get(app) {
     ["/api/categories", "/api/catfile/:catfile/categories/"],
     async (req, res) => {
       try {
-        const { hostname, protocol } = req;
         const lang = req.query.lang || "en";
         const catfile = await loadCatfile(req.params.catfile);
 
@@ -38,9 +36,6 @@ function get(app) {
           category.iconPath = normalizeIconPath(
             category.icon,
             req.params.catfile || "default",
-            protocol,
-            hostname,
-            envPort,
           );
           translate("category", category, catId, catfile.translations, lang);
           catfile.categories.set(catId, category);
@@ -63,17 +58,13 @@ function get(app) {
     ],
     async (req, res) => {
       const { categoryId, catfile } = req.params;
-      const { hostname, protocol } = req;
       const lang = req.query.lang || "en";
       try {
         const file = await loadCatfile(catfile);
         const category = file.categories.get(categoryId);
         category.iconPath = normalizeIconPath(
           category.icon,
-          req.params.catfile,
-          protocol,
-          hostname,
-          envPort,
+          req.params.catfile || "default",
         );
         translate("category", category, categoryId, file.translations, lang);
         res.json(category);
@@ -197,14 +188,8 @@ function get(app) {
   });
 }
 
-function normalizeIconPath(iconName, catfile, protocol, hostname, port) {
-  let baseUrl = "";
-  if (protocol && hostname && port) {
-    baseUrl = `${protocol}://${hostname}:${port}`;
-  } else if (protocol) {
-    baseUrl = protocol;
-  }
-  return `${baseUrl}/icons/catfile/${catfile}/${iconName}`;
+function normalizeIconPath(iconName, catfile) {
+  return `/icons/catfile/${catfile}/${iconName}`;
 }
 
 module.exports = get;
