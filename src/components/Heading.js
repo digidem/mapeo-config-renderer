@@ -4,9 +4,18 @@ import "./Heading.css";
 export default function Heading() {
   const { language, setLanguage, availableLanguages, loading } = useLanguage();
 
+  const handleGoHome = () => {
+    window.location.href = "/#/";
+  };
+
   return (
     <header>
-      <h2>Comapeo categories viewer</h2>
+      <div className="header-title">
+        <h2>Comapeo categories viewer</h2>
+        <button className="home-button" onClick={handleGoHome}>
+          ← Default
+        </button>
+      </div>
       <div className="header-controls">
         <fieldset className="language-selector" disabled={loading}>
           <legend>Language:</legend>

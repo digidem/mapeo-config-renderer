@@ -1,3 +1,27 @@
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.header-title h2 {
+  margin: 0;
+}
+
+.home-button {
+  background-color: #007aff;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.home-button:hover {
+  background-color: #0056b3;
+}
+
 .header-controls {
   display: flex;
   align-items: flex-start;
