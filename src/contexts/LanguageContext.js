@@ -5,8 +5,15 @@ const LanguageContext = createContext();
 
 const API_ROOT = "/api/catfile";
 
+// Get browser locale, returns language code (e.g., "en", "es", "pt")
+function getBrowserLanguage() {
+  const locale = navigator.language || navigator.userLanguage || "en";
+  // Extract just the language code (e.g., "en-US" -> "en")
+  return locale.split("-")[0].toLowerCase();
+}
+
 export function LanguageProvider({ children, catfile = "default" }) {
-  const [language, setLanguage] = useState("en");
+  const [language, setLanguage] = useState(null);
   const [availableLanguages, setAvailableLanguages] = useState(["en"]);
   const [loading, setLoading] = useState(true);
 
@@ -15,9 +22,19 @@ export function LanguageProvider({ children, catfile = "default" }) {
       try {
         const { data } = await axios.get(`${API_ROOT}/${catfile}/languages`);
         setAvailableLanguages(data);
+
+        // Set language based on browser locale if available, otherwise default to "en"
+        const browserLang = getBrowserLanguage();
+        if (data.includes(browserLang)) {
+          setLanguage(browserLang);
+        } else {
+          setLanguage("en");
+        }
+
         setLoading(false);
       } catch (error) {
         console.error("Failed to fetch languages:", error);
+        setLanguage("en");
         setLoading(false);
       }
     };
