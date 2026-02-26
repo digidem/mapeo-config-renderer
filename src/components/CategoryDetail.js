@@ -191,7 +191,6 @@ const PresetDetail = () => {
             <div className="not-found">Preset not found</div>
           )}
         </div>
-        <div className="bottom-circle"></div>
       </div>
     </div>
   );

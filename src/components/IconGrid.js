@@ -147,8 +147,6 @@ const IconGrid = () => {
             </div>
           )}
         </div>
-
-        <div className="bottom-circle"></div>
       </div>
     </div>
   );

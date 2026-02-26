@@ -1,42 +1,71 @@
-.header-title {
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background-color: #fff;
+  border-bottom: 1px solid #e0e0e0;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.navbar-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.navbar-right {
   display: flex;
   align-items: center;
   gap: 16px;
-  flex-wrap: wrap;
 }
 
-.header-title h2 {
-  margin: 0;
+/* Buttons */
+.nav-button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
 
 .home-button {
-  background-color: #007aff;
-  color: white;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
+  background-color: #f0f0f0;
+  color: #333;
+  padding: 8px 12px;
 }
 
 .home-button:hover {
+  background-color: #e0e0e0;
+}
+
+.upload-button {
+  background-color: #007aff;
+  color: white;
+}
+
+.upload-button:hover {
   background-color: #0056b3;
 }
 
-.header-controls {
-  display: flex;
-  align-items: flex-start;
-  gap: 20px;
-  flex-wrap: wrap;
+.upload-form {
+  margin: 0;
+  padding: 0;
+  border: none;
+  max-width: none;
 }
 
-@media (max-width: 520px) {
-  .header-controls {
-    flex-direction: column;
-    gap: 12px;
-  }
-}
-
-.language-selector {
+/* Language selector - Radio */
+.language-selector-radio {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -45,18 +74,13 @@
   margin: 0;
 }
 
-.language-selector legend {
-  font-weight: 500;
-  padding: 0;
-  margin-right: 4px;
-}
-
 .language-option {
   display: flex;
   align-items: center;
   gap: 4px;
   cursor: pointer;
-  font-weight: normal;
+  font-weight: 500;
+  font-size: 14px;
 }
 
 .language-option input[type="radio"] {
@@ -65,5 +89,66 @@
 }
 
 .language-option:hover {
-  color: #0066cc;
+  color: #007aff;
+}
+
+/* Language selector - Dropdown */
+.language-selector-dropdown {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  background-color: white;
+}
+
+.language-selector-dropdown:hover {
+  border-color: #888;
+}
+
+.language-selector-dropdown:focus {
+  outline: none;
+  border-color: #007aff;
+}
+
+/* Mobile */
+@media (max-width: 520px) {
+  .navbar {
+    padding: 10px 12px;
+    justify-content: flex-start;
+  }
+
+  .navbar-left {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .navbar-title {
+    font-size: 0.95rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .navbar-right {
+    gap: 10px;
+  }
+
+  .nav-button {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+
+  .home-button {
+    padding: 6px 10px;
+  }
+
+  .language-option {
+    font-size: 13px;
+    gap: 2px;
+  }
+
+  .language-selector-radio {
+    gap: 8px;
+  }
 }
