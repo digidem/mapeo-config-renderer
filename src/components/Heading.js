@@ -31,9 +31,9 @@ export default function Heading() {
           onClick={handleGoHome}
           title="Go to default"
         >
-          ←
+          ← 🏠
         </button>
-        <h1 className="navbar-title">Comapeo Categories</h1>
+        <h1 className="navbar-title">Comapeo Categories Viewer</h1>
       </div>
 
       <div className="navbar-right">

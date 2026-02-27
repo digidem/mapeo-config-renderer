@@ -9,35 +9,6 @@
 // Export the main app function
 const runApp = require("./api");
 
-// Export all utility functions from the lib
-const {
-  getFields,
-  getIcon,
-  getPresets,
-  getMessages,
-  getDefaults,
-  getMetadata,
-  getStylesheet,
-  getConfig,
-  log,
-} = require("./api/lib");
-
 module.exports = {
-  // Main app function
   runApp,
-
-  // Individual file parsers
-  getFields,
-  getIcon,
-  getPresets,
-  getMessages,
-  getDefaults,
-  getMetadata,
-  getStylesheet,
-
-  // Complete configuration parser
-  getConfig,
-
-  // Utility
-  log,
 };
