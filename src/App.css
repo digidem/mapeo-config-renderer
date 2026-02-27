@@ -5,10 +5,10 @@
   -moz-osx-font-smoothing: grayscale;
   color: #333;
   background-color: #f5f5f5;
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
-  /* justify-content: center; */
-  /* align-items: center; */
+  flex-direction: column;
+  overflow: hidden;
 }
 
 /* Global button styles */
@@ -47,15 +47,27 @@ input:focus {
 .phone-outer-frame {
   background: #e0e0e0;
   width: 480px;
+  max-width: 100%;
   border-radius: 36px;
   padding: 12px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-  margin: auto;
-  position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
+  margin: 20px auto;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+@media (max-width: 520px) {
+  .phone-outer-frame {
+    border-radius: 0;
+    padding: 0;
+    margin: 0;
+  }
+
+  .phone-frame {
+    border-radius: 0;
+  }
+
 }
 
 .phone-frame {
@@ -69,17 +81,6 @@ input:focus {
   flex-direction: column;
 }
 
-.bottom-circle {
-  position: absolute;
-  bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 40px;
-  height: 40px;
-  background-color: #e0e0e0;
-  border-radius: 50%;
-  border: 1px solid #ccc;
-}
 
 /* App header */
 .app-header {
@@ -105,19 +106,7 @@ input:focus {
   color: #666;
 }
 
-header {
-  margin:20px;
-}
 
-form {
-  display: flex;
-  flex-direction: column; /* stack vertically */
-  gap: 0.75rem;            /* spacing between fields */
-  max-width: 320px;
-  padding:24px;
-  border: 2px solid grey;
-  border-radius: 20px;
-}
 
 label {
   font-weight: 600;
